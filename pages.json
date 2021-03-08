@@ -1,0 +1,56 @@
+{
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "pages/tabBar/user/user",
+			"style": {
+				"navigationBarTitleText": "uni-app"
+			}
+		}, {
+			"path": "pages/tabBar/home/home",
+			"style": {
+				"navigationStyle":"custom", //开启自定义导航栏  =>原因是 H5 页面本身没有像小程序那样的顶部导航栏者一块，自定实现一个保持一致
+				"navigationBarTitleText": "",
+				"navigationBarTextStyle":"white",
+				"enablePullDownRefresh": false
+			}
+
+		}, {
+			"path": "pages/tabBar/follow/follow",
+			"style": {
+				"navigationStyle":"custom", //开启自定义导航栏  =>原因是 H5 页面本身没有小程序那样的顶部导航栏者一块，自定实现一个保持一致
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false
+			}
+
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "uni-app",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8"
+	},
+	"tabBar": {
+		"color": "#666",
+		"selectedColor": "#f07373",
+		"backgroundColor": "#FFFFFF",
+		"list": [{
+				"pagePath": "pages/tabBar/home/home",
+				"iconPath": "static/logo.png",
+				"selectedIconPath": "./static/logo.png",
+				"text": "首页"
+			}, {
+				"pagePath": "pages/tabBar/follow/follow",
+				"iconPath": "static/logo.png",
+				"selectedIconPath": "./static/logo.png",
+				"text": "关注"
+			}, {
+				"pagePath": "pages/tabBar/user/user",
+				"iconPath": "static/logo.png",
+				"selectedIconPath": "./static/logo.png",
+				"text": "我的"
+			}
+
+		]
+	}
+}
