@@ -6,19 +6,19 @@
 			</view>
 			<view class="news-list-item__content">
 				<view class="news-list-item__content__title">
-					uniapp 简直了
+					<text>uniapp 简直了uniapp 简直了uniapp 简直了uniapp 简直了uniapp 简直了uniapp 简直了uniapp 简直了</text>
 				</view>
 				<view class="news-list-item__content__other">
 					<view class="news-list-item__content__other__label">
 						前端
 					</view>
 					<view class="news-list-item__content__other__browse">
-						xxx 人浏览
+						<text>xxx 人浏览</text> 
 					</view>
 				</view>
 			</view>
 		</view>
-		
+
 	</view>
 </template>
 
@@ -34,34 +34,46 @@
 
 <style lang="scss">
 	.news-list-item {
-		
-		.news-list-item-wrapper{
+
+		.news-list-item-wrapper {
 			display: flex;
 			flex-direction: row;
 			width: 100%;
+
 			>.news-list-item__image-box {
 				width: 120px;
 				margin: 0 10rpx;
+
 				image {
 					width: 100%;
 					height: 100%;
 				}
 			}
-			
+
 			>.news-list-item__content {
 				display: flex;
 				flex-direction: column;
 				flex: 1;
-				>.news-list-item__content__other{
+
+				>.news-list-item__content__title {
+					overflow: hidden;
+					text-overflow: ellipsis;
+					display: -webkit-box; //作为弹性伸缩盒子模型显示。
+					-webkit-box-orient: vertical; //设置伸缩盒子的子元素排列方式--从上到下垂直排列
+					-webkit-line-clamp: 2; //显示的行
+				}
+
+				>.news-list-item__content__other {
 					display: flex;
 					flex-direction: row;
-					justify-content:space-between;
+					justify-content: space-between;
 					margin-top: auto;
 					margin-bottom: 6px;
 					box-sizing: border-box;
 					line-height: 1;
 					font-size: 14px;
-					>.news-list-item__content__other__label{
+
+					>.news-list-item__content__other__label {
 						display: flex;
 						align-items: center;
 						justify-content: center;
@@ -71,17 +83,19 @@
 						border: 1px solid $base-color;
 						border-radius: 20px;
 					}
-					>.news-list-item__content__other__browse{
+
+					>.news-list-item__content__other__browse {
 						margin-right: 11px;
 						padding-top: 2px;
 						color: #999999;
 					}
 				}
-			
+
 			}
-			
+
 		}
-		&::after{
+
+		&::after {
 			content: '';
 			display: block;
 			width: 100%;
