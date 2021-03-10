@@ -3,7 +3,11 @@
 		<scroll-view class="news-tab__srcoll" scroll-x>
 			<view class="news-tab__srcoll-box">
 
-				<view v-for=" (item,index) in list" :key="index" class="news-tab__srcoll__item">{{item.name}}</view>
+				<view v-for=" (item,index) in list" :key="index" 
+				@click="clickItem(item,index)" 
+				class="news-tab__srcoll__item"
+				:class="{active: activeIndex === index}"
+				>{{item.name}}</view>
 			</view>
 		</scroll-view>
 		<view class="news-tab__icon">
@@ -16,8 +20,18 @@
 	export default {
 		props: {
 			list: Array
+		},
+		data(){
+			return{
+				activeIndex : 0
+			}
+		},
+		methods:{
+			clickItem(item,index){
+				this.activeIndex = index
+				this.$emit("update:selected",{data:item,index})
+			}
 		}
-
 	}
 </script>
 
@@ -52,6 +66,10 @@
 					color: #8f8f94;
 					flex-shrink: 0;
 					box-sizing: border-box;
+					&.active{
+						color: $base-color;
+						transition: all 0.3s ease;
+					}
 				}
 			}
 

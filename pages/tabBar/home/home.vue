@@ -1,9 +1,7 @@
 <template>
-	<view>
+	<view class="news-page-home">
 		<navBar></navBar>
 		<tab :list="labelList"></tab>
-		home page
-
 	</view>
 </template>
 
@@ -13,18 +11,27 @@
 	export default {
 		data() {
 			return {
-				labelList: []
+				labelList: [],
+				articleList: []
 			}
 		},
-		methods: {
-
-		},
+		methods: {},
 		onLoad() {
-
+			this.$api.getLabel()
+				.then(res => this.labelList = res.data)
+				.catch(err => console.error(err))
 		}
 	}
 </script>
 
-<style>
+<style lang="scss">
+	page {
+		height: 100%;
+		display: flex;
+	}
 
+	.news-page-home {
+		display: flex;
+		flex-direction: column;
+	}
 </style>
