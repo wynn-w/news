@@ -1,6 +1,6 @@
 <template>
 
-	<swiper class="news-list" @change="change">
+	<swiper class="news-list" @change="change" :current="currentCopy">
 		<swiper-item v-for="(item,index0) in tabList" :key="index0" class="news-list__swiper-wrapper">
 			<!-- #ifdef MP -->
 			<scroll-view scroll-y class="news-list__scroll" :style="{height:`${scrollHeight}px`}" show-scrollbar>
@@ -12,7 +12,7 @@
 
 			<!-- #ifdef H5 -->
 			<scroll-view scroll-y class="news-list__scroll" :style="{height:`100%`}">
-				<view v-for="(item, index) in artList[index]" :key="index">
+				<view v-for="(item, index) in artList[currentCopy]" :key="index">
 					<list-item :item="item"> </list-item>
 				</view>
 			</scroll-view>
@@ -28,7 +28,7 @@
 			list: Array,
 			tabList: Array,
 			current: {
-				type: [Number, String],
+				type: Number,
 				default: 0
 			},
 			// #ifdef MP 
@@ -42,23 +42,24 @@
 				return this.list
 			}
 		},
-		watch:{
-			current(newValue){
-				this.index = newValue
+		watch: {
+			current(newValue) {
+				this.currentCopy = newValue
 			}
 		},
 		data() {
 			return {
-				index: 0
+				currentCopy: 0
 			};
 		},
 		methods: {
 			change(e) {
-				this.index = e.detail.current
-				const name = this.tabList[this.index].name
+				const current = e.detail.current
+				const name = this.tabList[current].name
+				this.currentCopy = current
 				this.$emit("update:current", {
-					name: name,
-					current: this.index
+					name,
+					current
 				})
 			}
 		},

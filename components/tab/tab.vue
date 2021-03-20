@@ -2,7 +2,6 @@
 	<view class="news-tab">
 		<scroll-view class="news-tab__srcoll" scroll-x>
 			<view class="news-tab__srcoll-box">
-
 				<view v-for=" (item,index) in list" :key="index" 
 				@click="clickItem(item,index)" 
 				class="news-tab__srcoll__item"
@@ -19,7 +18,16 @@
 <script>
 	export default {
 		props: {
-			list: Array
+			list: Array,
+			tabIndex:{
+				type: [Number,String],
+				default:0
+			}
+		},
+		watch:{
+			tabIndex(newValue){
+				this.activeIndex = newValue
+			}
 		},
 		data(){
 			return{
