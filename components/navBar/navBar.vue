@@ -2,8 +2,19 @@
 	<view class="news-navbar">
 		<view class="news-navbar--fixed">
 			<view class="system-barHeight" :style="{height:`${statusBarHeight}px`}"></view>
-			<view class="news-navbar__content" :style="{height:`${contentInfo.height}px`,width:`${contentInfo.width}px`}">
-				<view class="news-navbar__search" :style="{height:`${searchInfo.height}px`}">
+
+			<view @click="navToSearch" class="news-navbar__content" :class="{search:isSearch}" :style="{height:`${contentInfo.height}px`,width:`${contentInfo.width}px`}">
+				<!-- 搜索页 -->
+				<view v-if="isSearch" class="news-navbar__search__icon">
+					<uni-icons type="back" size="22" color="#ffffff"></uni-icons>
+				</view>
+				<view v-if="isSearch" class="news-navbar__search">
+					<view class="news-navbar__search__text">
+						<input class="news-navbar__search__text" type="text" value="" placeholder="请输入要搜索的内容" />
+					</view>
+				</view>
+				<!-- 首页 -->
+				<view v-else class="news-navbar__search" :style="{height:`${searchInfo.height}px`}">
 					<view class="news-navbar__search__icon">
 						<uni-icons type="search" size="16" color="#555666"></uni-icons>
 					</view>
@@ -11,6 +22,7 @@
 						user input history
 					</view>
 				</view>
+
 			</view>
 
 		</view>
@@ -21,43 +33,49 @@
 
 <script>
 	export default {
+		name: "new-bar",
+		props: {
+			isSearch: {
+				type: Boolean,
+				default: false
+			}
+		},
 		data() {
 			return {
 				statusBarHeight: 0,
-				contentInfo: {
-					height: 45,
-					width: ''
-				},
-				searchInfo: {
-					height: 30
-				}
+				contentInfo: { height: 45, width: '' },
+				searchInfo: { height: 30 }
 			};
 		},
 		mounted() {
-			const {
-				statusBarHeight
-			} = uni.getSystemInfoSync()
+			console.log(this.isSearch);
+			const { statusBarHeight } = uni.getSystemInfoSync()
 			// #ifndef H5 ||APP-PLUS ||MP-ALIPAY
-			const {
-				bottom,
-				top,
-				left,
-				height
-			} = uni.getMenuButtonBoundingClientRect() //小程序右上角菜单的 dom 信息
+			const { bottom, top, left, height } = uni.getMenuButtonBoundingClientRect() //小程序右上角菜单的 dom 信息
 			this.statusBarHeight = statusBarHeight
 			this.contentInfo.height = bottom + top - statusBarHeight * 2
 			this.contentInfo.width = left
 			this.searchInfo.height = height
 			// #endif
-
-			// console.log(uni.getSystemInfoSync());
-			// console.log(uni.getMenuButtonBoundingClientRect());
-		}
+		},
+		methods: {
+			navToSearch() {
+				if (this.isSearch) { return }
+				uni.navigateTo({
+					url: "/pages/home-search/home-search"
+				})
+			}
+		},
 	}
 </script>
 
 <style lang="scss">
+	page {
+		box-sizing: border-box;
+	}
+
 	.news-navbar {
+		font-size: 14rpx;
 
 		// display: flex;
 		// flex-direction: column;
@@ -70,12 +88,11 @@
 			z-index: 99;
 			background-color: $base-color;
 
-
 			>.news-navbar__content {
 				box-sizing: border-box;
 				padding: 0 15px;
 				display: flex;
-				flex-direction: column;
+				flex-direction: row;
 				align-items: center;
 				justify-content: center;
 				color: #FFFFFF;
@@ -85,7 +102,7 @@
 					align-items: center;
 					justify-content: flex-start;
 					width: 100%;
-
+					box-sizing: border-box;
 					border-radius: 30px;
 					border: 1px solid #d89595;
 					color: #555666;
@@ -103,6 +120,29 @@
 						font-size: 12px;
 					}
 
+				}
+
+				&.search {
+					padding-left: 0;
+
+					>.news-navbar__search__icon {
+						margin: 0 10rpx;
+					}
+
+					>.news-navbar__search {
+						border-radius: 16rpx;
+
+						>.news-navbar__search__text {
+							box-sizing: border-box;
+							width: 100%;
+							padding: 8rpx 10rpx;
+
+							>input {
+								width: 100%;
+								font-size: 18rpx;
+							}
+						}
+					}
 				}
 			}
 

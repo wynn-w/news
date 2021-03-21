@@ -23,7 +23,18 @@
 			}
 
 		}
-	],
+	    ,{
+            "path" : "pages/home-search/home-search",
+            "style" :                                                                                    
+            {
+				"navigationStyle":"custom", //开启自定义导航栏  =>原因是 H5 页面本身没有像小程序那样的顶部导航栏者一块，自定实现一个保持一致
+				"navigationBarTitleText": "",
+                "navigationBarTitleText": "",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+    ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "uni-app",
