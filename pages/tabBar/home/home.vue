@@ -5,7 +5,9 @@
 			<tab :list="GET_LABEL" :tabIndex="index" @update:selected="tabCurrent"></tab>
 		</view>
 		<view class="news-page-home__list">
-			<list :scrollHeight="scrollHeight" :tabList="GET_LABEL" :list="GET_ARTICLE" :current="index" @update:current="listCurrent"></list>
+			<list :scrollHeight="scrollHeight" :tabList="GET_LABEL" :list="GET_ARTICLE" :current="index"
+			      :load='GET_LOAD' :pageSize="pageSize" @update:current="listCurrent" @loadMore="loadMore"></list>
+
 		</view>
 
 	</view>
@@ -18,14 +20,14 @@
 		name: "tabBar-home",
 		computed: {
 			...mapActions(['asyncLabel']),
-			...mapGetters(['GET_LABEL', 'GET_ARTICLE', 'GET_INDEX']),
+			...mapGetters(['GET_LABEL', 'GET_ARTICLE', 'GET_INDEX', 'GET_LOAD']),
 			index: {
 				get() { return this.GET_INDEX },
 				set(value) { this.$store.commit('setIndex', value) }
 			}
 		},
 		data() {
-			return { scrollHeight: 0 }
+			return { scrollHeight: 0, pageSize: 10, load: {} }
 		},
 		methods: {
 			// #ifdef MP
@@ -40,28 +42,62 @@
 			// #endif
 			init() {
 				const name = '全部'
+				this.isLoadInit()
 				this.$store.dispatch('asyncLabel')
-				this.dispatch_asyncArticle(name)
+				this.dispatch_asyncArticle({ name, page: 1, pageSize: this.pageSize })
+				// this.$nextTick(function(){
+				// 	console.log(this.GET_INDEX,this.GET_ARTICLE[0]);
+				// })
 			},
 			// 滑动 list 组件触发
 			listCurrent(res) {
 				const { name, current } = res
 				this.index = current
-				this.dispatch_asyncArticle(name, current)
+				this.isLoadInit()
+				this.dispatch_asyncArticle({
+					name,
+					index: current,
+					page: this.GET_LOAD[current].page++,
+					pageSize: this.pageSize
+				})
 			},
 			// 点击 tab 组件触发
 			tabCurrent(res) {
 				const { name } = res.data
-				const {
-					index
-				} = res
+				const { index } = res
 				this.index = index
+				this.isLoadInit()
 				this.dispatch_asyncArticle(name, index)
 			},
-			dispatch_asyncArticle(name, index) {
+			// list 组件触发上拉加载 TODO
+			loadMore(res) {
+				const { name, index } = res
+				this.isLoadInit()
+				if (this.GET_LOAD[index].loading === 'onMore') {
+					return;
+				}
+				this.$store.dispatch('asyncArticle', {
+					name,
+					index,
+					page: this.GET_LOAD[index].page++,
+					pageSize: this.pageSize
+				})
+				//处理 1 没有数据停止触发云函数
+				//     2 页面数据长度少于视口长度则不显示 loadmore 组件
+				//     3 page属性不共用，一swiper item一个
+			},
+			dispatch_asyncArticle(arg) {
+				const { index = 0 } = arg
 				const list = this.GET_ARTICLE[index]
 				if (!list || list.length == 0) {
-					this.$store.dispatch('asyncArticle', { name, index })
+					this.$store.dispatch('asyncArticle', arg)
+				}
+			},
+			isLoadInit() {
+				const index = this.GET_INDEX
+				if (!this.GET_LOAD[index] || this.GET_LOAD[index].length === 0) {
+					const load = { page: 1, loading: 'loading' }
+					this.$store.commit('setLoad', { index, load })
 				}
 			}
 		},
