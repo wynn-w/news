@@ -44,7 +44,8 @@
 					<text>{{item.title}}</text>
 				</view>
 				<view class="news-list-item__image-box">
-					<image v-for="i in 3" :key="i" class="news-list-item__image-box_img" src="../../static/logo.png" mode="aspectFill"></image>
+					<image v-for="i in 3" :key="i" class="news-list-item__image-box_img" src="../../static/logo.png"
+					       mode="aspectFill"></image>
 				</view>
 				<view class="news-list-item__content__other">
 					<view class="news-list-item__content__other__label">
@@ -62,14 +63,10 @@
 
 <script>
 	export default {
+		name: "list-item",
 		props: {
 			item: Object
-		},
-		data() {
-			return {
-
-			};
-		},
+		}
 	}
 </script>
 
@@ -82,6 +79,7 @@
 			flex-direction: row;
 			width: 100%;
 			margin-bottom: .4rem;
+
 			>.news-list-item__image-box {
 				width: 6rem;
 				height: 6rem;
@@ -141,7 +139,7 @@
 
 		}
 
-		&::after {
+		&:after {
 			content: '';
 			display: block;
 			width: 100%;
@@ -153,6 +151,7 @@
 		.isColumn {
 			display: flex;
 			flex-direction: column;
+
 			>.news-list-item__content {
 				.news-list-item__content__title {
 					margin-bottom: 10rpx;
@@ -161,6 +160,7 @@
 				>.news-list-item__image-box {
 					width: 100%;
 					height: 7rem;
+
 					>.news-list-item__image-box_img {
 						width: 100%;
 						height: 100%;
@@ -168,14 +168,15 @@
 						overflow: hidden;
 					}
 				}
+
 				.news-list-item__content__other {
 					margin-top: .4rem;
-				
+
 					>.news-list-item__content__other__browse {
 						margin-right: 4rpx;
 					}
 				}
-				
+
 			}
 
 
@@ -199,6 +200,7 @@
 					flex-direction: row;
 					justify-content: space-around;
 					overflow: hidden;
+
 					>.news-list-item__image-box_img {
 						border-radius: .3rem
 					}
@@ -217,5 +219,12 @@
 				}
 			}
 		}
+
+		/* #ifdef MP */
+		&:last-child {
+			padding-bottom: .5rem;
+		}
+
+		/* #endif */
 	}
 </style>

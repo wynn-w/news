@@ -1,31 +1,17 @@
 <template>
 	<view class="news-list">
 		<swiper class="news-list__swiper" @change="change" :current="currentCopy">
-			<swiper-item v-for="(item,index0) in tabList" :key="index0" class="news-list__swiper-wrapper">
+			<swiper-item v-for="(item,index) in tabList" :key="index" class="news-list__swiper-wrapper">
 				<!-- #ifdef MP -->
-				<scroll-view scroll-y class="news-list__scroll" :style="{height:`${scrollHeight - 10 }px`}"
-				             show-scrollbar @scrolltolower="loadMore">
-					<view v-for="(item, index) in artList[currentCopy]" :key="index">
-						<list-item :item="item"> </list-item>
-					</view>
-					<uni-load-more v-if="artList[currentCopy] && artList[currentCopy].length  > (pageSize -1)" iconType="snow"
-					               :status="load[currentCopy].loading"></uni-load-more>
-				</scroll-view>
+				<list-scroll refresherEnabble :list="list[currentCopy]" :current="currentCopy" :load="load"
+				             :pageSize="pageSize" @loadMore="loadMore" @refresher="refresher" :scrollHeight="scrollHeight"></list-scroll>
 				<!-- #endif  -->
-
 				<!-- #ifdef H5 -->
-				<scroll-view scroll-y class="news-list__scroll" :style="{height:`100%`}" show-scrollbar
-				             @scrolltolower="loadMore">
-					<view v-for="(item, index) in artList[currentCopy]" :key="index">
-						<list-item :item="item"> </list-item>
-					</view>
-					<uni-load-more v-if="artList[currentCopy] && artList[currentCopy].length  > (pageSize -1)" iconType="snow"
-					               :status="load[currentCopy].loading"></uni-load-more>
-				</scroll-view>
+				<list-scroll ref="listScroll" refresherEnabble :list="list[currentCopy]" :current="currentCopy"
+				             :load="load" :pageSize="pageSize" @loadMore="loadMore" @refresher="refresher"></list-scroll>
 				<!-- #endif  -->
 			</swiper-item>
 		</swiper>
-
 	</view>
 
 
@@ -33,25 +19,25 @@
 
 <script>
 	export default {
+		name:"news-list",
 		props: {
-			list: Array,
 			tabList: Array,
 			current: {
 				type: Number,
 				default: 0
 			},
+			list: Array,
 			load: Object,
 			pageSize: Number,
+			refresherEnabble: {
+				type: Boolean,
+				default: false
+			},
 			// #ifdef MP 
 			scrollHeight: {
-				type: [Number, String], //当前项目环境只定传
+				type: Number
 			},
 			// #endif
-		},
-		computed: {
-			artList() {
-				return this.list
-			}
 		},
 		watch: {
 			current(newValue) {
@@ -59,10 +45,7 @@
 			}
 		},
 		data() {
-			return {
-				currentCopy: 0,
-				length: 0
-			};
+			return { currentCopy: 0 };
 		},
 		methods: {
 			change(e) {
@@ -74,15 +57,53 @@
 					current
 				})
 			},
-			loadMore() {
+			// 上拉加载 
+			loadMore(res) {
 				const index = this.currentCopy
-				const name = this.tabList[index].name
+				if (this.load[index].loading === 'onMore') {
+					return;
+				}
+				this.$store.dispatch('asyncArticle', {
+					name: this.tabList[index].name,
+					index,
+					page: this.load[index].page++,
+					pageSize: this.pageSize,
 
-				this.$emit('loadMore', { name, index })
+				})
+			},
+			// 下拉刷新
+			refresher() {
+				const index = this.currentCopy
+				// 小程序没有 refs，但 $children 方便; H5 用 $ref 方便
+				// #ifdef MP
+				const target = this.$children[index]
+				// #endif
+				// #ifdef H5
+				const target = this.$refs.listScroll[index]
+				// #endif
+				this.$store.dispatch('asyncArticle', {
+					name: this.tabList[index].name,
+					index: index,
+					page: 1,
+					pageSize: this.pageSize,
+					isRefresh: true //仅在刷新去情况下传递，默认 false
+				}).then(res => {
+					if (res.code === 200) {
+						target.toastSuccess()
+						target.refresherabort()
+					} else {
+						target.toastOther()
+					}
+
+				})
+			},
+			isLoadInit() {
+				const index = this.currentCopy
+				if (!this.load[index] || this.load[index].length === 0) {
+					const load = { page: 1, loading: 'loading' }
+					this.$store.commit('setLoad', { index, load })
+				}
 			}
-		},
-		mounted() {
-			const a = this.artList[this.currentCopy]
 		}
 	}
 </script>
@@ -95,16 +116,19 @@
 		overflow: hidden;
 		box-sizing: border-box;
 		height: 100%;
+		positon: fixed;
 
 		>.news-list__swiper {
 			display: flex;
 			flex-direction: column;
 			flex: 1;
+			positon: fixed;
 
 			>.news-list__swiper-wrapper {
 				height: 100%;
 				overflow: hidden;
 				box-sizing: border-box;
+				positon: fixed;
 
 				.news-list__scroll {
 					display: flex;
