@@ -1,13 +1,12 @@
 <template>
 	<view class="news-page-home">
-		<view class="news-page-home__head" ref="homeHead">
+		<view class="news-page-home__head" >
 			<navBar></navBar>
 			<tab :list="GET_LABEL" :tabIndex="index" @update:selected="tabCurrent"></tab>
 		</view>
-		<view class="news-page-home__list">
+		<view class="news-page-home__list" >
 			<list :scrollHeight="scrollHeight" :tabList="GET_LABEL" :list="GET_ARTICLE" :current="index"
 			      :load='GET_LOAD' :pageSize="pageSize" @update:current="listCurrent" @loadMore="loadMore"></list>
-
 		</view>
 
 	</view>
@@ -15,11 +14,10 @@
 
 <script>
 	// 基于 easyCom 同名组件可直接使用，但是组件为局部组件
-	import { mapActions, mapGetters } from "vuex";
+	import { mapGetters } from "vuex";
 	export default {
-		name: "tabBar-home",
+		name: "news-tabBar-home",
 		computed: {
-			...mapActions(['asyncLabel']),
 			...mapGetters(['GET_LABEL', 'GET_ARTICLE', 'GET_INDEX', 'GET_LOAD']),
 			index: {
 				get() { return this.GET_INDEX },
@@ -27,7 +25,7 @@
 			}
 		},
 		data() {
-			return { scrollHeight: 0, pageSize: 10, load: {} }
+			return { scrollHeight: 0, pageSize: 10, isReffresher: false }
 		},
 		methods: {
 			// #ifdef MP
@@ -45,9 +43,6 @@
 				this.isLoadInit()
 				this.$store.dispatch('asyncLabel')
 				this.dispatch_asyncArticle({ name, page: 1, pageSize: this.pageSize })
-				// this.$nextTick(function(){
-				// 	console.log(this.GET_INDEX,this.GET_ARTICLE[0]);
-				// })
 			},
 			// 滑动 list 组件触发
 			listCurrent(res) {
@@ -60,6 +55,7 @@
 					page: this.GET_LOAD[current].page++,
 					pageSize: this.pageSize
 				})
+				// console.log(this.$refs.list.$refs[`aa0`][0]);
 			},
 			// 点击 tab 组件触发
 			tabCurrent(res) {
@@ -69,23 +65,7 @@
 				this.isLoadInit()
 				this.dispatch_asyncArticle(name, index)
 			},
-			// list 组件触发上拉加载 TODO
-			loadMore(res) {
-				const { name, index } = res
-				this.isLoadInit()
-				if (this.GET_LOAD[index].loading === 'onMore') {
-					return;
-				}
-				this.$store.dispatch('asyncArticle', {
-					name,
-					index,
-					page: this.GET_LOAD[index].page++,
-					pageSize: this.pageSize
-				})
-				//处理 1 没有数据停止触发云函数
-				//     2 页面数据长度少于视口长度则不显示 loadmore 组件
-				//     3 page属性不共用，一swiper item一个
-			},
+			
 			dispatch_asyncArticle(arg) {
 				const { index = 0 } = arg
 				const list = this.GET_ARTICLE[index]
@@ -108,7 +88,8 @@
 			// #ifdef MP
 			this.getScrollHeight()
 			// #endif
-		}
+		},
+
 	}
 </script>
 
