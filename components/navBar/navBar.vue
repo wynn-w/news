@@ -5,12 +5,20 @@
 
 			<view @click="navToSearch" class="news-navbar__content" :class="{search:isSearch}" :style="{height:`${contentInfo.height}px`,width:`${contentInfo.width}px`}">
 				<!-- 搜索页 -->
-				<view v-if="isSearch" class="news-navbar__search__icon">
+				<view v-if="isSearch" class="news-navbar__icon" @click="navBack">
 					<uni-icons type="back" size="22" color="#ffffff"></uni-icons>
 				</view>
 				<view v-if="isSearch" class="news-navbar__search">
+					<view class="news-navbar__search__icon">
+						<uni-icons type="search" size="16" color="#555666"></uni-icons>
+					</view>
 					<view class="news-navbar__search__text">
-						<input class="news-navbar__search__text" type="text" value="" placeholder="请输入要搜索的内容" />
+
+						<input class="news-navbar__search__text" type="text" :value="value" @input="input"
+						       placeholder="搜索" />
+					</view>
+					<view class="news-navbar__search__icon">
+						<uni-icons type="clear" size="16" color="#a0a3bf"></uni-icons>
 					</view>
 				</view>
 				<!-- 首页 -->
@@ -19,8 +27,9 @@
 						<uni-icons type="search" size="16" color="#555666"></uni-icons>
 					</view>
 					<view class="news-navbar__search__text">
-						user input history
+						点击搜索
 					</view>
+
 				</view>
 
 			</view>
@@ -38,7 +47,12 @@
 			isSearch: {
 				type: Boolean,
 				default: false
-			}
+			},
+			value: String,
+		},
+		model: {
+			prop: "value",
+			event: "input"
 		},
 		data() {
 			return {
@@ -48,7 +62,6 @@
 			};
 		},
 		mounted() {
-			console.log(this.isSearch);
 			const { statusBarHeight } = uni.getSystemInfoSync()
 			// #ifndef H5 ||APP-PLUS ||MP-ALIPAY
 			const { bottom, top, left, height } = uni.getMenuButtonBoundingClientRect() //小程序右上角菜单的 dom 信息
@@ -64,6 +77,12 @@
 				uni.navigateTo({
 					url: "/pages/home-search/home-search"
 				})
+			},
+			navBack() {
+				uni.navigateBack()
+			},
+			input(e) {
+				this.$emit('input', e.detail.value)
 			}
 		},
 	}
@@ -109,15 +128,15 @@
 					background-color: #f9e6e6;
 
 					>.news-navbar__search__icon {
-						// width: 10px;
-						// height: 10px;
-						margin: 0 16px;
-						// border: 1px solid #007AFF;
+						margin: 0 8rpx 0 22rpx;
+						&:last-child {
+							margin: 0 8rpx;
+						}
 					}
 
 					>.news-navbar__search__text {
 
-						font-size: 12px;
+						font-size: 26rpx;
 					}
 
 				}
@@ -125,7 +144,7 @@
 				&.search {
 					padding-left: 0;
 
-					>.news-navbar__search__icon {
+					>.news-navbar__icon {
 						margin: 0 10rpx;
 					}
 
@@ -139,7 +158,8 @@
 
 							>input {
 								width: 100%;
-								font-size: 18rpx;
+								font-size: 26rpx;
+								color: #555666;
 							}
 						}
 					}
