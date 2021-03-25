@@ -15,9 +15,9 @@
 					<view class="news-navbar__search__text">
 
 						<input class="news-navbar__search__text" type="text" :value="value" @input="input"
-						       placeholder="搜索" />
+						       placeholder="搜索" @confirm="submit" />
 					</view>
-					<view class="news-navbar__search__icon">
+					<view class="news-navbar__search__icon" @click="clear" ref="clearIcon" :style="{display: iconbox}">
 						<uni-icons type="clear" size="16" color="#a0a3bf"></uni-icons>
 					</view>
 				</view>
@@ -54,11 +54,21 @@
 			prop: "value",
 			event: "input"
 		},
+		computed: {
+			iconbox() {
+				let display = this.iconStyle.display
+				if (this.value) return display = "block"
+				return display = "none"
+			}
+		},
 		data() {
 			return {
 				statusBarHeight: 0,
 				contentInfo: { height: 45, width: '' },
-				searchInfo: { height: 30 }
+				searchInfo: { height: 30 },
+				iconStyle: {
+					display: 'none'
+				}
 			};
 		},
 		mounted() {
@@ -83,6 +93,13 @@
 			},
 			input(e) {
 				this.$emit('input', e.detail.value)
+			},
+			submit(e) {
+				this.$emit('comfirm', { value: e.detail.value })
+			},
+			clear() {
+				this.iconStyle.display = 'none'
+				this.$emit('input', '')
 			}
 		},
 	}
@@ -94,16 +111,11 @@
 	}
 
 	.news-navbar {
-		font-size: 14rpx;
-
-		// display: flex;
-		// flex-direction: column;
 		>.news-navbar--fixed {
 			position: fixed;
 			top: 0;
 			left: 0;
 			width: 100%;
-
 			z-index: 99;
 			background-color: $base-color;
 
@@ -129,13 +141,22 @@
 
 					>.news-navbar__search__icon {
 						margin: 0 8rpx 0 22rpx;
+
 						&:last-child {
 							margin: 0 8rpx;
+							display: none;
+							color: #a3a5c3;
+
+							.uni-icons {
+								&:hover {
+									color: #887e7e !important;
+								}
+							}
+
 						}
 					}
 
 					>.news-navbar__search__text {
-
 						font-size: 26rpx;
 					}
 
@@ -160,6 +181,7 @@
 								width: 100%;
 								font-size: 26rpx;
 								color: #555666;
+
 							}
 						}
 					}
