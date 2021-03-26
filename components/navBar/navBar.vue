@@ -89,7 +89,10 @@
 				})
 			},
 			navBack() {
-				uni.navigateBack()
+				uni.switchTab({
+					url:'/pages/tabBar/home/home'
+				})
+				this.$emit('navBack')
 			},
 			input(e) {
 				this.$emit('input', e.detail.value)
@@ -100,6 +103,7 @@
 			clear() {
 				this.iconStyle.display = 'none'
 				this.$emit('input', '')
+				this.$emit('clear')
 			}
 		},
 	}
