@@ -1,36 +1,79 @@
 <template>
 	<view class="home-search">
-		<navBar isSearch=""></navBar>
-		<view class="home-search__content">
-			<view class="home-search__content__label-box">
+		<navBar isSearch v-model="input" @comfirm="submit" @navBack="back" @clear="inputClear"></navBar>
+		<view class="home-search__header">
+			<view v-if="!isComfirm" class="home-search__header__label-box">
 				<!-- 标头 -->
 				<view class="label-box__header">
 					<text class="label-title">搜索历史</text>
-					<text class="label-clear">清空</text>
+					<text class="label-clear" @click="clearHistory">清空</text>
 				</view>
 				<!-- 内容 -->
-				<view v-if="historyLists && historyLists.length > 0" class="label-box__header">
+				<view v-if="GET_SEARCH_HISTORY.length > 0" class="label-box__header">
 					<view class="label-box__content">
-						<view class="label-box__content__item" v-for="(item,index) in historyLists" :key="index">
-							{{item.name}}
+						<view class="label-box__content__item" v-for="(item,index) in GET_SEARCH_HISTORY" :key="index">
+							{{item}}
 						</view>
 					</view>
 				</view>
 				<view v-else class="no-data"> 没有搜索历史 </view>
+			</view>
+			<view v-else class="home-search__content">
+				<list-scroll :list="GET_SEARCH_LIST"></list-scroll>
 			</view>
 		</view>
 	</view>
 </template>
 
 <script>
+	import { mapGetters, mapMutations } from "vuex";
 	export default {
+		name: 'home-search',
+		computed: {
+			...mapGetters(['GET_INPUT', 'GET_SEARCH_HISTORY', 'GET_SEARCH_LIST']),
+			input: {
+				get() {
+					return this.$store.state.input
+				},
+				set(value) {
+					this.$store.commit("setInput", value)
+				}
+			}
+		},
 		data() {
 			return {
-				historyLists: [{ name: 11 }, { name: 11 }, { name: 11 }, { name: 11 }, { name: 11 }, { name: 11 },
-					{ name: 11 }, { name: 11 }
-				]
+
+				isComfirm: false
 			};
-		}
+		},
+		methods: {
+			submit(res) {
+				const { value } = res
+				this.showHeader()
+				if (!value) {
+					return this.$store.commit('setSearchList', { data: [] })
+				}
+				this.$store.commit('setSearchHistory', value)
+				this.$store.dispatch('asyncSearchList', {value})
+			},
+			back() {
+				this.$store.commit('setInput', '')
+				this.hideHeader()
+			},
+			inputClear(){
+				this.showHeader()
+			},
+			clearHistory() {
+				this.$store.commit('clearHistory')
+			},
+			showHeader() {
+				this.isComfirm = true
+			},
+			hideHeader() {
+				this.isComfirm = false
+			}
+		},
+
 	}
 </script>
 
@@ -44,7 +87,7 @@
 		flex-direction: column;
 		flex: 1;
 
-		.home-search__content__label-box {
+		.home-search__header__label-box {
 			background-color: #fff;
 			margin-bottom: 10px;
 
@@ -82,6 +125,9 @@
 					color: #666;
 				}
 			}
+		}
+		.home-search__content{
+			padding-top: 20rpx;
 		}
 	}
 
