@@ -1,6 +1,6 @@
 <template>
 	<view class="home-search">
-		<navBar isSearch v-model="input" @comfirm="submit" @navBack="back" @clear="inputClear"></navBar>
+		<navBar isSearch v-model="input" @comfirm="search"></navBar>
 		<view class="home-search__header">
 			<view v-if="!isComfirm" class="home-search__header__label-box">
 				<!-- 标头 -->
@@ -11,22 +11,27 @@
 				<!-- 内容 -->
 				<view v-if="GET_SEARCH_HISTORY.length > 0" class="label-box__header">
 					<view class="label-box__content">
-						<view class="label-box__content__item" v-for="(item,index) in GET_SEARCH_HISTORY" :key="index">
+						<view class="label-box__content__item" v-for="(item,index) in GET_SEARCH_HISTORY" :key="index" @click="searchItem(item)" @longtap="showDeleteIcon">
 							{{item}}
+							<uni-icons v-if="isDelete" class="item__icon-close" type="clear" size="16" color="#f07373" @click.native.stop="deleteItem(item)"></uni-icons>
 						</view>
 					</view>
 				</view>
 				<view v-else class="no-data"> 没有搜索历史 </view>
 			</view>
 			<view v-else class="home-search__content">
-				<list-scroll :list="GET_SEARCH_LIST"></list-scroll>
+				<list-scroll v-if="!isEqureZore && GET_SEARCH_LIST.length > 0" :list="GET_SEARCH_LIST"></list-scroll>
+				<!-- TODO: 在没有数据情况下显示，样式需要优化 -->
+				<view class="no-data" v-else>
+					没找匹配的搜索结果
+				</view>
 			</view>
 		</view>
 	</view>
 </template>
 
 <script>
-	import { mapGetters, mapMutations } from "vuex";
+	import { mapGetters } from "vuex";
 	export default {
 		name: 'home-search',
 		computed: {
@@ -42,50 +47,79 @@
 		},
 		data() {
 			return {
-
-				isComfirm: false
+				isComfirm: false, //是否已经搜索
+				isEqureZore: false, // 搜索结果是否为空
+				isDelete: false //是否显示搜索历史标签的删除符号
 			};
 		},
 		methods: {
-			submit(res) {
+			
+			/**
+			 * 搜索 相关逻辑
+			 * */
+			search(res) {
 				const { value } = res
 				this.showHeader()
+				this.submit(value)
+			},
+			searchItem(item) {
+				if (this.isDelete) return
+				this.showHeader()
+				this.submit(item)
+				// 回显
+				this.input = item
+			},
+			submit(value) {
 				if (!value) {
-					return this.$store.commit('setSearchList', { data: [] })
+					this.$store.commit('setSearchList', { data: [] })
+					return
 				}
 				this.$store.commit('setSearchHistory', value)
-				this.$store.dispatch('asyncSearchList', {value})
+				this.$store.dispatch('asyncSearchList', { value }).then(res => {
+					if (res.isNull) this.isEqureZore = true
+				})
 			},
-			back() {
+
+			/**
+			 * 搜索历史 相关逻辑
+			 * */
+			clearHistory() { this.$store.commit('clearHistory') },
+			deleteItem(name) {
+				this.isDelete && this.deleteItemHistory(name)
+			},
+			deleteItemHistory(name) {
+				this.$store.commit('deleteHistory', name)
+			},
+			showDeleteIcon() { this.isDelete = true },
+			showHeader() { this.isComfirm = true },
+			hideHeader() { this.isComfirm = false },
+
+			/**
+			 * 页面卸载，重置输入框与搜索结果
+			 * */
+			unloadHandle() {
 				this.$store.commit('setInput', '')
+				this.$store.commit('setSearchList', { data: [] })
 				this.hideHeader()
-			},
-			inputClear(){
-				this.showHeader()
-			},
-			clearHistory() {
-				this.$store.commit('clearHistory')
-			},
-			showHeader() {
-				this.isComfirm = true
-			},
-			hideHeader() {
-				this.isComfirm = false
 			}
 		},
-
+		onUnload() {
+			this.unloadHandle()
+		}
 	}
 </script>
 
 <style lang="scss">
 	page {
 		font-size: 14px;
+		height: 100%;
 	}
 
 	.home-search {
 		display: flex;
 		flex-direction: column;
 		flex: 1;
+		height: inherit;
 
 		.home-search__header__label-box {
 			background-color: #fff;
@@ -123,10 +157,20 @@
 					border: 1px #666 solid;
 					font-size: 14px;
 					color: #666;
+					position: relative;
+
+					>.item__icon-close {
+						position: absolute;
+						right: -12rpx;
+						top: -12rpx;
+						background-color: #fff;
+						border-radius: 50%;
+					}
 				}
 			}
 		}
-		.home-search__content{
+
+		.home-search__content {
 			padding-top: 20rpx;
 		}
 	}
