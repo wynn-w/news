@@ -1,5 +1,5 @@
 <template>
-	<view class="news-list-item">
+	<view class="news-list-item" @click="openDetail">
 		<view class="news-list-item-wrapper" v-if="item.mode === 'base'">
 			<view class="news-list-item__image-box">
 				<image class="news-list-item__image-box_img" src="../../static/logo.png" mode="aspectFill"></image>
@@ -44,8 +44,7 @@
 					<text>{{item.title}}</text>
 				</view>
 				<view class="news-list-item__image-box">
-					<image v-for="i in 3" :key="i" class="news-list-item__image-box_img" src="../../static/logo.png"
-					       mode="aspectFill"></image>
+					<image v-for="i in 3" :key="i" class="news-list-item__image-box_img" src="../../static/logo.png" mode="aspectFill"></image>
 				</view>
 				<view class="news-list-item__content__other">
 					<view class="news-list-item__content__other__label">
@@ -65,7 +64,26 @@
 	export default {
 		name: "list-item",
 		props: {
-			item: Object
+			item: {
+				type: Object,
+				required:true
+			}
+		},
+		methods: {
+			openDetail() {
+				const item = this.item
+				this.$emit('clickItem', item) //通知外部
+				const params = {
+					_id: item._id,
+					title: item.title,
+					create_time: item.create_time,
+					thumbs_up_count: item.thumbs_up_count,
+					browse_count: item.browse_count
+				}
+				uni.navigateTo({
+					url: `/pages/news-detail/news-detail?params=${JSON.stringify(params)}`
+				})
+			}
 		}
 	}
 </script>
