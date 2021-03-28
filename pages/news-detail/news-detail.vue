@@ -23,7 +23,9 @@
 			</button>
 		</view>
 		<view class="detail__content">
-			内容
+			<view class="detail__content__html">
+				<u-parse :content="article.content" :noData="noData"></u-parse>
+			</view>
 		</view>
 		<view class="detail__control">
 			<view class="detail__control__input">
@@ -46,15 +48,32 @@
 </template>
 
 <script>
+	import uParse from "@/components/gaoyia-parse/parse.vue"
 	export default {
+		components: { uParse },
 		data() {
 			return {
-				article: Object.create({})
+				article: Object.create({}),
+				noData: '<p stye="text-align:center;color:#666">加载中....</p>',
 			};
+		},
+		methods: {
+			getDetail() {
+				this.$api.getArticleDetail({
+					articleId: this.article._id,
+					// userId: //当前用户 id ，游客则为空
+				}).then(res => {
+					const { data } = res
+					this.article = Object.assign({}, this.article, data)
+				}).catch(err => {
+					console.log(err)
+				})
+			}
 		},
 		onLoad(optios) {
 			const data = JSON.parse(optios.params);
 			this.article = Object.assign({}, this.article, data)
+			this.getDetail()
 		}
 	}
 </script>
@@ -132,6 +151,12 @@
 
 		>.detail__content {
 			flex: 1;
+			margin-top: 20px;
+			min-height: 500px;
+
+			.detail__content__html {
+				padding: 0 30rpx;
+			}
 		}
 
 		>.detail__control {
@@ -146,7 +171,7 @@
 			height: 108rpx;
 			padding-bottom: 10rpx;
 			//  #endif
-			
+
 			border-top: 1rpx #f5f5f5 solid;
 			background-color: #fff;
 			box-sizing: border-box;
