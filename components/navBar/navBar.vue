@@ -15,7 +15,7 @@
 					<view class="news-navbar__search__text">
 
 						<input class="news-navbar__search__text" type="text" :value="value" @input="input"
-						       placeholder="搜索" @confirm="submit" />
+						       placeholder="搜索" @confirm="submit" @focus="focus"/>
 					</view>
 					<view class="news-navbar__search__icon" @click="clear" ref="clearIcon" :style="{display: iconbox}">
 						<uni-icons type="clear" size="16" color="#a0a3bf"></uni-icons>
@@ -99,6 +99,9 @@
 			},
 			submit(e) {
 				this.$emit('comfirm', { value: e.detail.value })
+			},
+			focus(){
+				this.$emit('inputFocus')
 			},
 			clear() {
 				this.iconStyle.display = 'none'

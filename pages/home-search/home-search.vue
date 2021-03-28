@@ -1,6 +1,6 @@
 <template>
 	<view class="home-search">
-		<navBar isSearch v-model="input" @comfirm="search"></navBar>
+		<navBar isSearch v-model="input" @comfirm="searchList" @inputFocus="inputFocus"></navBar>
 		<view class="home-search__header">
 			<view v-if="!isComfirm" class="home-search__header__label-box">
 				<!-- 标头 -->
@@ -53,11 +53,11 @@
 			};
 		},
 		methods: {
-			
+
 			/**
 			 * 搜索 相关逻辑
 			 * */
-			search(res) {
+			searchList(res) {
 				const { value } = res
 				this.showHeader()
 				this.submit(value)
@@ -90,10 +90,24 @@
 			deleteItemHistory(name) {
 				this.$store.commit('deleteHistory', name)
 			},
-			showDeleteIcon() { this.isDelete = true },
+			showDeleteIcon() {
+				this.isDelete = true;
+				// #ifdef MP-WEIXIN
+				wx.vibrateShort({
+					success: function() {
+						console.log('success');
+					}
+				})
+				// #endif
+				
+			},
 			showHeader() { this.isComfirm = true },
 			hideHeader() { this.isComfirm = false },
 
+			inputFocus(){
+				this.hideHeader()
+			},
+			
 			/**
 			 * 页面卸载，重置输入框与搜索结果
 			 * */
