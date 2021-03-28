@@ -17,7 +17,6 @@ exports.main = async (event, context) => {
 		.match(matchProp)
 		.project({
 			content: false,
-			author: false,
 		})
 		.skip((page - 1) * pageSize) //跳过的数据
 		.limit(pageSize)

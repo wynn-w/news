@@ -66,19 +66,22 @@
 		props: {
 			item: {
 				type: Object,
-				required:true
+				required: true
 			}
 		},
 		methods: {
 			openDetail() {
 				const item = this.item
 				this.$emit('clickItem', item) //通知外部
+				console.log('item');
+				console.log(item);
 				const params = {
 					_id: item._id,
 					title: item.title,
 					create_time: item.create_time,
 					thumbs_up_count: item.thumbs_up_count,
-					browse_count: item.browse_count
+					browse_count: item.browse_count,
+					author: item.author
 				}
 				uni.navigateTo({
 					url: `/pages/news-detail/news-detail?params=${JSON.stringify(params)}`
