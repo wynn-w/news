@@ -28,7 +28,7 @@
 			</view>
 		</view>
 		<view class="detail__control">
-			<view class="detail__control__input">
+			<view class="detail__control__input" @click="openComment">
 				<text>谈谈你的看法</text>
 				<uni-icons type="compose" size="16" color="#f07373"></uni-icons>
 			</view>
@@ -44,6 +44,19 @@
 				</view>
 			</view>
 		</view>
+		<uni-popup ref="popup" type="bottom" :maskClick="false">
+			<view class="popup-box">
+				<view class="popup-header">
+					<text class="popup-header__item" @click="closeComment">取消</text>
+					<text class="popup-header__item" @click="publishComment">发布</text>
+				</view>
+				<view class="popup-content">
+					<textarea class="popup-textarea" v-model="popupValue" placeholder="请输入评论" fixed maxlength="200" />
+					</view>
+				<view class="popup-count">{{popupValue.length}}/200</view>
+			</view>
+			
+		</uni-popup>
 	</view>
 </template>
 
@@ -55,6 +68,7 @@
 			return {
 				article: Object.create({}),
 				noData: '<p stye="text-align:center;color:#666">加载中....</p>',
+				popupValue:''
 			};
 		},
 		methods: {
@@ -67,6 +81,35 @@
 					this.article = Object.assign({}, this.article, data)
 				}).catch(err => {
 					console.log(err)
+				})
+			},
+			/**
+			 *	comment 相关 
+			 **/ 
+			openComment(){
+				this.$refs.popup.open()
+			},
+			closeComment(){
+				this.$refs.popup.close()
+			},
+			publishComment(){
+				if(!this.popupValue) {
+					uni.showToast({
+						title:"请输出评论内容",
+						icon:"none"
+					})
+					return
+				}
+				this.$api.updataComment({
+					articleId: this.article._id,
+					content:this.popupValue
+				}).then(res=>{
+					console.log(res);
+					this.$refs.popup.close()
+					uni.showToast({
+						title:"评论成功",
+						icon:"success"
+					})
 				})
 			}
 		},
@@ -151,10 +194,11 @@
 
 		>.detail__content {
 			flex: 1;
-			margin-top: 20px;
-			min-height: 500px;
+			margin: 40rpx 0;
+			min-height: 1000rpx;
 
 			.detail__content__html {
+				height: inherit;
 				padding: 0 30rpx;
 			}
 		}
@@ -207,5 +251,36 @@
 				}
 			}
 		}
+		.popup-box{
+			background-color: #FFFFFF;
+			padding: 0 30rpx;
+			>.popup-header{
+				display: flex;
+				justify-content: space-between;
+				font-size: 28rpx;
+				color: #666666;
+				border-bottom: 1rpx #F5F5F5;
+				>.popup-header__item{
+					height: 100rpx;
+					line-height: 100rpx;
+					
+					&:hover{
+						opacity: 0.8;
+					}
+				}
+			}
+			.popup-textarea{
+				width: 100%;
+				height: 400rpx;
+			}
+			>.popup-count{
+				display: flex;
+				justify-content: flex-end;
+				padding-bottom: 10rpx;
+				font-size: 24rpx;
+				color: #999999;
+			}
+		}
+	
 	}
 </style>
