@@ -35,9 +35,8 @@
 				<view class="comment-content" v-for="item in commentList" :key="item.comment_id">
 					<news-comment :comment="item" @reply="reply"></news-comment>
 				</view>
-				<view class="comment-title" v-if="commentList.length === 0">
-					快来添加第一条评论吧
-				</view>
+				<uni-load-more v-if="commentList.length === 0 || commentList.length > commentsPageSize" iconType="snow" :status="loading" :contentText="contentText"></uni-load-more>
+
 			</view>
 		</view>
 		<!-- 底部控件 -->
@@ -113,7 +112,12 @@
 				},
 				isPass : false, //敏感词检测
 				emojiData:[], //表情包数组
-				emojiDataInited :false
+				emojiDataInited :false,
+				commentsPage: 1,
+				commentsPageSize:5,
+				isBottom: false, //下拉加载触发两次
+				loading:'loading', //load more组件状态
+				contentText:{contentrefresh: "正在加载...",contentnomore: "没有更多评论了"}
 			};
 		},
 		methods: {
@@ -181,10 +185,23 @@
 			// 获取评论
 			getArticleComments(){
 				this.$api.getComments({
-					articleId: this.article._id
+					articleId: this.article._id,
+					page:this.commentsPage,
+					pageSize:this.commentsPageSize
 				}).then(res=>{
 					const {data} = res
-					this.commentList= Object.assign([],this.commentList,data)
+					if(data.length === 0){
+						console.log(121222);
+						this.commentsPage--
+						this.isBottom = true
+						this.loading = 'noMore'
+						return
+					}
+					this.isBottom = false
+					let old = JSON.parse(JSON.stringify(this.commentList))
+					old.push(...data)
+					console.log(res);
+					this.commentList=old
 				})
 			},
 			// 回复评论
@@ -262,6 +279,13 @@
 			this.getArticleComments()
 			this.InitEmoji(emoji)
 			
+		},
+		onReachBottom(){
+			console.log(this.isBottom);
+			if(this.isBottom)return
+			this.isBottom = true
+			this.commentsPage++
+			this.getArticleComments()
 		}
 	}
 </script>
