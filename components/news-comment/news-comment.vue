@@ -6,11 +6,13 @@
 				<image src="@/static/logo.png" mode="aspectFill"></image>
 			</view>
 			<view class="comment-wrapper__header-info">
-				<view v-if="comment.isReply" class="comment-wrapper__header-info__usr-name">
+				
+				<view v-if="!comment.is_reply" class="comment-wrapper__header-info__usr-name">
 					{{comment.author.author_name}}
 				</view>
 				<view v-else class="comment-wrapper__header-info__usr-name">
 					{{comment.author.author_name}} <text class="reply-text">回复</text> {{comment.to}}
+					
 				</view>
 				<text class="comment-wrapper__header-info__time">{{comment.create_time | timeFomat}}</text>
 			</view>
@@ -73,6 +75,9 @@
 				// 回复对象为 文章评论 -> 直接传
 				this.$emit("reply", content)
 			}
+		},
+		mounted() {
+			// console.log(this.comment);
 		}
 	}
 </script>
