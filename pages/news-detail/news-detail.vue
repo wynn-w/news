@@ -153,6 +153,13 @@
 						this.isPass = true
 					}
 				})
+				if(!this.isPass){
+					uni.showToast({
+						image:"/static/tRefresh/fail.png",
+						title:'当前输入存在敏感词汇'
+					})
+					return
+				}
 				this.updateComment({content:this.popupValue,...this.replyProps})
 			},
 			updateComment(content){
