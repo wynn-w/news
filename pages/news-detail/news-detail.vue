@@ -51,10 +51,10 @@
 					<uni-icons type="chat" size="22" color="#f07373"></uni-icons>
 				</view>
 				<view class="detail__control__icons-box" @click="addToLike(article._id)">
-					<uni-icons :type="article.is_like ?'heart-filled':'heart'" size="22" color="#f07373"></uni-icons>
+					<uni-icons :type="article.is_like ? 'heart-filled' : 'heart'" size="22" color="#f07373"></uni-icons>
 				</view>
 				<view class="detail__control__icons-box" @click="addToThumbs(article._id)">
-					<uni-icons type='hand-thumbsup' size="22" color="#f07373"></uni-icons>
+					<uni-icons :type="article.is_thumbs_up? 'hand-thumbsup-filled' : 'hand-thumbsup'" size="22" color="#f07373"></uni-icons>
 				</view>
 			</view>
 		</view>
@@ -103,7 +103,7 @@
 		data() {
 			return {
 				article: Object.create({}),
-				user: Object.create({}), //添加登录功能后使用vuex 保存数据
+				//user: Object.create({}), //添加登录功能后使用vuex 保存数据
 				noData: '<p stye="text-align:center;color:#666">加载中....</p>',
 				popupValue:'',
 				commentList:[],
@@ -135,9 +135,11 @@
 					console.log(err)
 				})
 			},
+			
 			/**
-			 * 用户关/取作者
+			 * 文章/用户相关操作
 			 * */ 
+			// 关注作者
 			followAuthor(authorId){
 				uni.showLoading();
 				this.$api.updateAuthorLikes({
@@ -145,7 +147,6 @@
 					// userId
 				}).then(res=>{
 					uni.hideLoading();
-					// TODO
 					this.article.is_author_like = !this.article.is_author_like;
 					uni.showToast({
 						title:this.article.is_author_like?'关注成功':'取消成功',
@@ -155,6 +156,23 @@
 					uni.hideLoading();
 				})
 			},
+			// 文章点赞 -> 点赞为单项事件，不可逆
+			addToThumbs(articleId){
+				uni.showLoading()
+				this.$api.updateArticleThumbs({
+					articleId
+				}).then(res=>{
+					uni.hideLoading();
+					this.article.is_thumbs_up=true;
+					this.article.thumbs_up_count++;
+					uni.showToast({
+						title:res.msg
+					})
+				}).catch(err=>{
+					uni.hideLoading();
+				})
+			},
+			// 文章收藏
 			addToLike(articleId){
 				uni.showLoading()
 				this.$api.updateArticleLikes({
