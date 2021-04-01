@@ -39,6 +39,7 @@
 
 			</view>
 		</view>
+
 		<!-- 底部控件 -->
 		<view class="detail__control">
 			<view class="detail__control__input" @click="openComment">
@@ -49,10 +50,10 @@
 				<view class="detail__control__icons-box">
 					<uni-icons type="chat" size="22" color="#f07373"></uni-icons>
 				</view>
-				<view class="detail__control__icons-box">
-					<uni-icons type='heart' size="22" color="#f07373"></uni-icons>
+				<view class="detail__control__icons-box" @click="addToLike(article._id)">
+					<uni-icons :type="article.is_like ?'heart-filled':'heart'" size="22" color="#f07373"></uni-icons>
 				</view>
-				<view class="detail__control__icons-box">
+				<view class="detail__control__icons-box" @click="addToThumbs(article._id)">
 					<uni-icons type='hand-thumbsup' size="22" color="#f07373"></uni-icons>
 				</view>
 			</view>
@@ -150,13 +151,25 @@
 						title:this.article.is_author_like?'关注成功':'取消成功',
 						icon:'none'
 					})
-					
-					uni.$emit("update_author")
 				}).catch(err=>{
 					uni.hideLoading();
 				})
 			},
-			
+			addToLike(articleId){
+				uni.showLoading()
+				this.$api.updateArticleLikes({
+					articleId
+				}).then(res=>{
+					uni.hideLoading()
+					this.article.is_like = !this.article.is_like
+					uni.showToast({
+						title:this.article.is_like ?'收藏成功':'取消收藏',
+						icon:'none'
+					})
+				}).catch(err=>{
+					uni.hideLoading();
+				})
+			},
 			
 			
 			/**
