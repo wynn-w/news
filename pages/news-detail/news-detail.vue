@@ -20,8 +20,8 @@
 					<text>{{article.thumbs_up_count}} 点赞</text>
 				</view>
 			</view>
-			<button class="detail-urs-info__button" type="default">
-				关注
+			<button class="detail-urs-info__button" type="default" @click="followAuthor(article.author.id)">
+				{{article.is_author_like ? `取消关注`:`关注`}}
 			</button>
 		</view>
 		<view class="detail__content">
@@ -102,6 +102,7 @@
 		data() {
 			return {
 				article: Object.create({}),
+				user: Object.create({}), //添加登录功能后使用vuex 保存数据
 				noData: '<p stye="text-align:center;color:#666">加载中....</p>',
 				popupValue:'',
 				commentList:[],
@@ -115,9 +116,10 @@
 				emojiDataInited :false,
 				commentsPage: 1,
 				commentsPageSize:5,
-				isBottom: false, //下拉加载触发两次
+				isBottom: false, //下拉加载触发两次解决
 				loading:'loading', //load more组件状态
-				contentText:{contentrefresh: "正在加载...",contentnomore: "没有更多评论了"}
+				contentText:{contentrefresh: "正在加载...",contentnomore: "没有更多评论了"},
+				follow: false
 			};
 		},
 		methods: {
@@ -132,6 +134,30 @@
 					console.log(err)
 				})
 			},
+			/**
+			 * 用户关/取作者
+			 * */ 
+			followAuthor(authorId){
+				uni.showLoading();
+				this.$api.updateAuthorLikes({
+					authorId,
+					// userId
+				}).then(res=>{
+					uni.hideLoading();
+					// TODO
+					this.article.is_author_like = !this.article.is_author_like;
+					uni.showToast({
+						title:this.article.is_author_like?'关注成功':'取消成功',
+						icon:'none'
+					})
+					
+					uni.$emit("update_author")
+				}).catch(err=>{
+					uni.hideLoading();
+				})
+			},
+			
+			
 			
 			/**
 			 *	comment 相关 
@@ -191,7 +217,6 @@
 				}).then(res=>{
 					const {data} = res
 					if(data.length === 0){
-						console.log(121222);
 						this.commentsPage--
 						this.isBottom = true
 						this.loading = 'noMore'
@@ -200,7 +225,6 @@
 					this.isBottom = false
 					let old = JSON.parse(JSON.stringify(this.commentList))
 					old.push(...data)
-					console.log(res);
 					this.commentList=old
 				})
 			},
@@ -281,7 +305,6 @@
 			
 		},
 		onReachBottom(){
-			console.log(this.isBottom);
 			if(this.isBottom)return
 			this.isBottom = true
 			this.commentsPage++
