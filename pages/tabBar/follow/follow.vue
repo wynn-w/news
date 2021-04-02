@@ -17,8 +17,8 @@
 			</view>
 			<view class="follow__content__author" v-else :style="{height:height}">
 				<uni-load-more v-if="authorLiks.length === 0 " iconType="snow" status="loading"></uni-load-more>
-				<list-scroll-slot @loadMore="loadMoreAuthor" :load="load" :pageSize="load[choose].pageSize" :current="choose">
-					<list-item-author class="" v-for="item in authorLiks" :author="item" @longpress="deleteAuthorLike"> </list-item-author>
+				<list-scroll-slot :load="load" :pageSize="load[choose].pageSize" :current="choose">
+					<list-item-author class="" v-for="item in authorLiks" :author="item"> </list-item-author>
 				</list-scroll-slot>
 			</view>
 
@@ -51,21 +51,29 @@
 					this.updataAuthor()
 				}
 			},
-			deleteAuthorLike(id) {
-			// 	uni.showModal({
-			// 		title: '提示',
-			// 		content: '这是一个模态弹窗',
-			// 		success: function(res) {
-			// 			if (res.confirm) {
-			// 				console.log('用户点击确定');
-			// 			} else if (res.cancel) {
-			// 				console.log('用户点击取消');
-			// 			}
-			// 		}
-			// 	});
-			// 	// this.$api.updateAuthorLikes({
-			// 	// 	authorId: id
-			// 	// }).then(res=> console.log(res))
+			deleteActicleLike(id) {
+				uni.showModal({
+					title: '提示',
+					content: '取消收藏',
+					cancelText: '返回',
+					confirmText: '确认',
+					success: (res) => {
+						if (res.confirm) {
+							this.$api.updateArticleLikes({
+								articleId: id,
+								// userId:''
+							}).then(res => {
+								if (res.code === 200) {
+									this.loadInit()
+									this.updateActicle()
+								}
+							})
+						} else if (res.cancel) {
+
+						}
+					}
+				});
+
 			},
 			updataAuthor(arg) {
 				if (!this.load[this.choose]) {
@@ -76,10 +84,7 @@
 					page: this.load[this.choose].page,
 					pageSize: this.load[this.choose].pageSize
 				}).then(res => {
-					// this.authorLiks = Object.assign({}, this.authorLiks, res.data)
-
 					const { data } = res
-
 					if (data.length === 0) {
 						let old = this.load[this.choose]
 						old.loading = "noMore"
@@ -87,11 +92,11 @@
 						return
 					}
 					//loadMore 触发的更新
-					if (arg && arg.flag === "loadMore") {
-						this.authorLiks.push(...data)
-						this.loadMoreAuthorTag = false
-						return
-					}
+					// if (arg && arg.flag === "loadMore") {
+					// 	this.authorLiks.push(...data)
+					// 	this.loadMoreAuthorTag = false
+					// 	return
+					// }
 					this.loadMoreAuthorTag = false
 					this.authorLiks = data
 				})
@@ -130,15 +135,17 @@
 				this.updateActicle({ flag: 'loadMore' })
 
 			},
-			loadMoreAuthor() {
-				console.log(121222212);
-				// if (this.loadMoreAuthorTag) return
-				// this.loadMoreAuthorTag = true
-				// if (this.load[this.choose].loading === "noMore") return
-				// this.load[this.choose].page++
-				// this.updateAuthor({ flag: 'loadMore' })
+			// loadMoreAuthor() {
+			// if (this.loadMoreAuthorTag) return
+			// this.loadMoreAuthorTag = true
+			// if (this.load[this.choose].loading === "noMore") return
+			// this.load[this.choose].page++
+			// this.updateAuthor({ flag: 'loadMore' })
 
-			},
+			// },
+			/**
+			 *  初始化相关
+			 * */ 
 			loadInit() {
 				if (this.choose) {
 					this.$set(this.load, this.choose, {
@@ -154,6 +161,7 @@
 					pageSize: 7
 				})
 			},
+			// content 区域高度
 			calcHeight() {
 				// #ifndef H5 ||APP-PLUS ||MP-ALIPAY
 				let view = uni.createSelectorQuery().select('.follow__content__article')
@@ -161,19 +169,27 @@
 					this.height = `${data.top}px`
 				}).exec()
 				// #endif
+			},
+			// 所有外部事件监听
+			eventListener() {
+				uni.$on('updateActicle', () => {
+					this.load[this.choose].page = 1
+					this.updateActicle()
+				})
+				uni.$on('updataAuthorLikes', () => {
+					// this.load[this.choose].page = 1
+					this.updataAuthor()
+				})
+				uni.$on('deleteActicleLike', (res) => {
+					// this.load[this.choose].page = 1
+					this.deleteActicleLike(res)
+				})
 			}
 
 		},
 		onLoad() {
 			this.loadInit()
-			uni.$on('updateActicle', () => {
-				this.load[this.choose].page = 1
-				this.updateActicle()
-			})
-			uni.$on('updataAuthorLikes', () => {
-				// this.load[this.choose].page = 1
-				this.updataAuthor()
-			})
+			this.eventListener()
 			this.updateActicle()
 			this.calcHeight()
 		},

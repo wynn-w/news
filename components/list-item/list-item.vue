@@ -1,8 +1,9 @@
 <template>
-	<view class="news-list-item" @click="openDetail">
+	<view class="news-list-item" @click="openDetail"  @longpress="emitLongpress">
 		<view class="news-list-item-wrapper" v-if="item.mode === 'base'">
 			<view class="news-list-item__image-box">
-				<image class="news-list-item__image-box_img" src="../../static/logo.png" mode="aspectFill"></image>
+				<!-- <image class="news-list-item__image-box_img" src="../../static/logo.png" mode="aspectFill"></image> -->
+				<image class="news-list-item__image-box_img" :src="item.cover[0]" mode="aspectFill"></image>
 			</view>
 			<view class="news-list-item__content">
 				<view class="news-list-item__content__title">
@@ -13,7 +14,7 @@
 						{{item.classify}}
 					</view>
 					<view class="news-list-item__content__other__browse">
-						<text>{{item.browse_count}}人浏览</text>
+						<text>{{ item.browse_count}}人浏览</text>
 					</view>
 				</view>
 			</view>
@@ -25,7 +26,8 @@
 					<text>{{item.title}}</text>
 				</view>
 				<view class="news-list-item__image-box">
-					<image class="news-list-item__image-box_img" src="../../static/logo.png" mode="aspectFill"></image>
+					<!-- <image class="news-list-item__image-box_img" src="../../static/logo.png" mode="aspectFill"></image> -->
+					<image class="news-list-item__image-box_img" :src="item.cover[0]" mode="aspectFill"></image>
 				</view>
 				<view class="news-list-item__content__other">
 					<view class="news-list-item__content__other__label">
@@ -44,7 +46,8 @@
 					<text>{{item.title}}</text>
 				</view>
 				<view class="news-list-item__image-box">
-					<image v-for="i in 3" :key="i" class="news-list-item__image-box_img" src="../../static/logo.png" mode="aspectFill"></image>
+					<!-- <image v-for="i in 3" :key="i" class="news-list-item__image-box_img" src="../../static/logo.png" mode="aspectFill"></image> -->
+					<image v-if="index < 3" v-for="i in item.cover" :key="i" class="news-list-item__image-box_img" :src="item.cover" mode="aspectFill"></image>
 				</view>
 				<view class="news-list-item__content__other">
 					<view class="news-list-item__content__other__label">
@@ -72,10 +75,9 @@
 		methods: {
 			openDetail() {
 				const item = this.item
+
 				this.$emit('clickItem', item) //通知外部
-				console.log('item');
-				console.log(item);
-				const params = {
+				let params = {
 					_id: item._id,
 					title: item.title,
 					create_time: item.create_time,
@@ -83,9 +85,18 @@
 					browse_count: item.browse_count,
 					author: item.author
 				}
+				// #ifdef MP
+				params = JSON.stringify(params)
+				// #endif
+				// #ifdef H5
+				params = window.btoa(encodeURIComponent(JSON.stringify(params)))
+				// #endif
 				uni.navigateTo({
-					url: `/pages/news-detail/news-detail?params=${JSON.stringify(params)}`
+					url: `/pages/news-detail/news-detail?params=${params}`
 				})
+			},
+			emitLongpress(){
+				uni.$emit('deleteActicleLike',this.item._id)
 			}
 		}
 	}
