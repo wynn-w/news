@@ -11,12 +11,15 @@
 		</view>
 		<!-- 主体 -->
 		<view class="follow__content">
-			<uni-load-more v-if="acticleLiks.length === 0 " iconType="snow" status="loading"></uni-load-more>
 			<view class="follow__content__article" :style="{height:height}" v-if="choose === 0">
-				<list-scroll :list="acticleLiks" @loadMore="loadMore" :load="load" :pageSize="pageSize" :current="choose"></list-scroll>
+				<uni-load-more v-if="acticleLiks.length === 0 " iconType="snow" status="loading"></uni-load-more>
+				<list-scroll :list="acticleLiks" @loadMore="loadMore" :load="load" :pageSize="load[choose].pageSize" :current="choose"></list-scroll>
 			</view>
-			<view class="follow__content__author" v-else>
-				作者页
+			<view class="follow__content__author" v-else :style="{height:height}">
+				<uni-load-more v-if="authorLiks.length === 0 " iconType="snow" status="loading"></uni-load-more>
+				<list-scroll-slot @loadMore="loadMoreAuthor" :load="load" :pageSize="load[choose].pageSize" :current="choose">
+					<list-item-author class="" v-for="item in authorLiks" :author="item" @longpress="deleteAuthorLike"> </list-item-author>
+				</list-scroll-slot>
 			</view>
 
 		</view>
@@ -25,13 +28,15 @@
 
 <script>
 	export default {
+		name: "news-follow",
 		data() {
 			return {
 				choose: 0,
 				acticleLiks: [],
-				pageSize: 6,
+				authorLiks: [],
 				load: {},
 				loadMoreTag: false,
+				loadMoreAuthorTag: false,
 				contentInfo: null,
 				height: `100px`
 			}
@@ -42,17 +47,65 @@
 					return this.choose = 0
 				}
 				this.choose = 1
+				if (this.authorLiks.length === 0) {
+					this.updataAuthor()
+				}
+			},
+			deleteAuthorLike(id) {
+			// 	uni.showModal({
+			// 		title: '提示',
+			// 		content: '这是一个模态弹窗',
+			// 		success: function(res) {
+			// 			if (res.confirm) {
+			// 				console.log('用户点击确定');
+			// 			} else if (res.cancel) {
+			// 				console.log('用户点击取消');
+			// 			}
+			// 		}
+			// 	});
+			// 	// this.$api.updateAuthorLikes({
+			// 	// 	authorId: id
+			// 	// }).then(res=> console.log(res))
+			},
+			updataAuthor(arg) {
+				if (!this.load[this.choose]) {
+					this.loadInit()
+				}
+				this.$api.getAuthorLikes({
+					// userId:'',
+					page: this.load[this.choose].page,
+					pageSize: this.load[this.choose].pageSize
+				}).then(res => {
+					// this.authorLiks = Object.assign({}, this.authorLiks, res.data)
+
+					const { data } = res
+
+					if (data.length === 0) {
+						let old = this.load[this.choose]
+						old.loading = "noMore"
+						this.load = Object.assign({}, this.load, old)
+						return
+					}
+					//loadMore 触发的更新
+					if (arg && arg.flag === "loadMore") {
+						this.authorLiks.push(...data)
+						this.loadMoreAuthorTag = false
+						return
+					}
+					this.loadMoreAuthorTag = false
+					this.authorLiks = data
+				})
 			},
 			updateActicle(arg) {
+				if (!this.load[this.choose]) {
+					this.loadInit()
+				}
 				this.$api.getArticleLikes({
 					// userId:'',
 					page: this.load[this.choose].page,
-					pageSize: this.pageSize
+					pageSize: this.load[this.choose].pageSize
 				}).then(res => {
 					const { data } = res
-					if (!this.load[this.choose]) {
-						this.loadInit()
-					}
 					if (data.length === 0) {
 						let old = this.load[this.choose]
 						old.loading = "noMore"
@@ -77,11 +130,37 @@
 				this.updateActicle({ flag: 'loadMore' })
 
 			},
+			loadMoreAuthor() {
+				console.log(121222212);
+				// if (this.loadMoreAuthorTag) return
+				// this.loadMoreAuthorTag = true
+				// if (this.load[this.choose].loading === "noMore") return
+				// this.load[this.choose].page++
+				// this.updateAuthor({ flag: 'loadMore' })
+
+			},
 			loadInit() {
-				this.load[this.choose] = {
-					page: 1,
-					loading: 'loading'
+				if (this.choose) {
+					this.$set(this.load, this.choose, {
+						page: 1,
+						loading: 'loading',
+						pageSize: 6
+					})
+					return
 				}
+				this.$set(this.load, this.choose, {
+					page: 1,
+					loading: 'loading',
+					pageSize: 7
+				})
+			},
+			calcHeight() {
+				// #ifndef H5 ||APP-PLUS ||MP-ALIPAY
+				let view = uni.createSelectorQuery().select('.follow__content__article')
+				view.fields({ rect: true }, data => {
+					this.height = `${data.top}px`
+				}).exec()
+				// #endif
 			}
 
 		},
@@ -91,13 +170,12 @@
 				this.load[this.choose].page = 1
 				this.updateActicle()
 			})
+			uni.$on('updataAuthorLikes', () => {
+				// this.load[this.choose].page = 1
+				this.updataAuthor()
+			})
 			this.updateActicle()
-			// #ifndef H5 ||APP-PLUS ||MP-ALIPAY
-			let view = uni.createSelectorQuery().select('.follow__content__article')
-			view.fields({ rect: true }, data => {
-				this.height = `${data.top}px`
-			}).exec()
-			// #endif
+			this.calcHeight()
 		},
 	}
 </script>
@@ -128,7 +206,7 @@
 				font-size: 32rpx;
 				font-weight: 500;
 				color: #838383;
-				border-bottom: 8rpx solid #FFFFFF;
+				border-bottom: 8rpx solid transparent;
 
 				&.active {
 					color: $base-color;
@@ -153,7 +231,13 @@
 
 			}
 
-			>.follow__content__author {}
+			>.follow__content__author {
+				flex: 1;
+
+				.news-list__scroll {
+					height: 100%;
+				}
+			}
 		}
 	}
 </style>
