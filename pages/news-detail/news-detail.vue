@@ -184,6 +184,7 @@
 						title:this.article.is_like ?'收藏成功':'取消收藏',
 						icon:'none'
 					})
+					uni.$emit('updateActicle')
 				}).catch(err=>{
 					uni.hideLoading();
 				})
