@@ -18,7 +18,18 @@
 			<view class="follow__content__author" v-else :style="{height:height}">
 				<uni-load-more v-if="authorLiks.length === 0 " iconType="snow" status="loading"></uni-load-more>
 				<list-scroll-slot :load="load" :pageSize="load[choose].pageSize" :current="choose">
-					<list-item-author class="" v-for="item in authorLiks" :author="item"> </list-item-author>
+					<uni-swipe-action threshold=60>
+						<uni-swipe-action-item show="right" v-for="(item,index) in authorLiks" :key="item.id">
+							<list-item-author :author="item" @click="onClick(index)"> </list-item-author>
+
+							<template v-slot:right>
+								<view @click="deleteAuthorLike(item.id)" class="btn-delete-wrapper">
+									<text class="btn-delete">删除</text>
+								</view>
+							</template>
+						</uni-swipe-action-item>
+					</uni-swipe-action>
+
 				</list-scroll-slot>
 			</view>
 
@@ -50,6 +61,21 @@
 				if (this.authorLiks.length === 0) {
 					this.updataAuthor()
 				}
+			},
+			deleteAuthorLike(id) {
+				// console.log(id);
+				this.$api.updateAuthorLikes({
+					authorId: id,
+					// userId:''
+				}).then(res => {
+					if (res.code === 200) {
+						this.loadInit()
+						this.updataAuthor()
+						uni.showToast({
+							title: res.msg
+						})
+					}
+				})
 			},
 			deleteActicleLike(id) {
 				uni.showModal({
@@ -144,8 +170,21 @@
 
 			// },
 			/**
+			 * list-item-author 组件相关
+			 * */
+			swipeChange(e, index) {
+				console.log('当前状态：' + open + '，下标：' + index)
+			},
+			clicked(index) {
+				console.log(`下标：` + index)
+			},
+			onClick() {
+				console.log(122);
+				// console.log('点击了' + (e.position === 'left' ? '左侧' : '右侧') + e.content.text + '按钮')
+			},
+			/**
 			 *  初始化相关
-			 * */ 
+			 * */
 			loadInit() {
 				if (this.choose) {
 					this.$set(this.load, this.choose, {
@@ -254,6 +293,27 @@
 					height: 100%;
 				}
 			}
+		}
+	}
+
+	.btn-delete-wrapper {
+		display: flex;
+		width: 100rpx;
+		height: 100%;
+
+		.btn-delete {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			flex: 1;
+			box-sizing: border-box;
+			background-color: $base-color;
+			color: #FFFFFF;
+			font-size: 32rpx;
+			font-weight: 500;
+			line-height: 1;
+			letter-spacing: 3rpx;
+
 		}
 	}
 </style>
