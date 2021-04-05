@@ -3,41 +3,68 @@
 		{
 			"path": "pages/tabBar/user/user",
 			"style": {
-				"navigationBarTitleText": "uni-app"
+				// #ifdef H5
+				"navigationStyle": "custom", //开启自定义导航栏  =>原因是 H5 页面本身没有小程序那样的顶部导航栏者一块，自定实现一个保持一致
+				// #endif
+				"navigationBarTitleText": ""
 			}
 		}, {
 			"path": "pages/tabBar/home/home",
 			"style": {
-				"navigationStyle":"custom", //开启自定义导航栏  =>原因是 H5 页面本身没有像小程序那样的顶部导航栏者一块，自定实现一个保持一致
-				"navigationBarTitleText": "",
-				"navigationBarTextStyle":"white",
-				"enablePullDownRefresh": false
+				"navigationStyle": "custom", //开启自定义导航栏  =>原因是 H5 页面本身没有像小程序那样的顶部导航栏者一块，自定实现一个保持一致
+				"enablePullDownRefresh": false, //下拉刷新
+				"navigationBarTextStyle": "white"
 			}
 
 		}, {
 			"path": "pages/tabBar/follow/follow",
 			"style": {
-				"navigationStyle":"custom", //开启自定义导航栏  =>原因是 H5 页面本身没有小程序那样的顶部导航栏者一块，自定实现一个保持一致
+				// #ifdef H5
+				"navigationStyle": "custom", //开启自定义导航栏  =>原因是 H5 页面本身没有小程序那样的顶部导航栏者一块，自定实现一个保持一致
+				// #endif
+				"navigationBarTitleText": "",
+				"navigationBarBackgroundColor": "#f07373",
+				"enablePullDownRefresh": false
+			}
+
+		}, {
+			"path": "pages/home-search/home-search",
+			"style": {
+				"navigationStyle": "custom", //开启自定义导航栏  =>原因是 H5 页面本身没有像小程序那样的顶部导航栏者一块，自定实现一个保持一致
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false
+			}
+
+		}, {
+			"path": "pages/news-detail/news-detail",
+			"style": {
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false
+			}
+
+		}, {
+
+			"path": "pages/user-article/user-article",
+			"style": {
+				// #ifdef H5
+				"navigationStyle": "custom", //开启自定义导航栏  =>原因是 H5 页面本身没有小程序那样的顶部导航栏者一块，自定实现一个保持一致
+				// #endif
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false
+			}
+
+		}, {
+			"path": "pages/feedback/feedback",
+			"style": {
 				"navigationBarTitleText": "",
 				"enablePullDownRefresh": false
 			}
 
 		}
-	    ,{
-            "path" : "pages/home-search/home-search",
-            "style" :                                                                                    
-            {
-				"navigationStyle":"custom", //开启自定义导航栏  =>原因是 H5 页面本身没有像小程序那样的顶部导航栏者一块，自定实现一个保持一致
-				"navigationBarTitleText": "",
-                "navigationBarTitleText": "",
-                "enablePullDownRefresh": false
-            }
-            
-        }
-    ],
+	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "uni-app",
+		"navigationBarTitleText": "news",
 		"navigationBarBackgroundColor": "#F8F8F8",
 		"backgroundColor": "#F8F8F8"
 	},
