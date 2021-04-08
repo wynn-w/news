@@ -1,9 +1,9 @@
 <template>
-	<view class="news-list-item" @click="openDetail"  @longpress="emitLongpress">
-		<view class="news-list-item-wrapper" v-if="item.mode === 'base'">
-			<view class="news-list-item__image-box">
+	<view class="news-list-item" @click="openDetail" @longpress="emitLongpress">
+		<view class="news-list-item-wrapper" hover-class="el-hover" hover-stay-time="100" hover-start-time="0" v-if="item.mode === 'base'">
+			<view class="news-list-item__image-box" v-if="item.cover[0]">
 				<!-- <image class="news-list-item__image-box_img" src="../../static/logo.png" mode="aspectFill"></image> -->
-				<image class="news-list-item__image-box_img" :src="item.cover[0]" mode="aspectFill"></image>
+				<image class="news-list-item__image-box_img" :src="`https://images.weserv.nl/?url=${item.cover[0]}`" mode="aspectFill"></image>
 			</view>
 			<view class="news-list-item__content">
 				<view class="news-list-item__content__title">
@@ -19,15 +19,15 @@
 				</view>
 			</view>
 		</view>
-		<view class="news-list-item-wrapper isColumn" v-else-if="item.mode === 'column'">
+		<view class="news-list-item-wrapper isColumn" hover-class="el-hover" hover-stay-time="100" hover-start-time="0" v-else-if="item.mode === 'column'">
 
 			<view class="news-list-item__content">
 				<view class="news-list-item__content__title">
 					<text>{{item.title}}</text>
 				</view>
-				<view class="news-list-item__image-box">
+				<view class="news-list-item__image-box" v-if="item.cover[0]">
 					<!-- <image class="news-list-item__image-box_img" src="../../static/logo.png" mode="aspectFill"></image> -->
-					<image class="news-list-item__image-box_img" :src="item.cover[0]" mode="aspectFill"></image>
+					<image class="news-list-item__image-box_img" :src="`https://images.weserv.nl/?url=${item.cover[0]}`" mode="aspectFill"></image>
 				</view>
 				<view class="news-list-item__content__other">
 					<view class="news-list-item__content__other__label">
@@ -39,15 +39,15 @@
 				</view>
 			</view>
 		</view>
-		<view class="news-list-item-wrapper isList" v-else="item.mode === 'image'">
+		<view class="news-list-item-wrapper isList" hover-class="el-hover" hover-stay-time="100" hover-start-time="0" v-else="item.mode === 'image'">
 
 			<view class="news-list-item__content">
 				<view class="news-list-item__content__title">
 					<text>{{item.title}}</text>
 				</view>
-				<view class="news-list-item__image-box">
+				<view class="news-list-item__image-box" v-if="item.cover[0]">
 					<!-- <image v-for="i in 3" :key="i" class="news-list-item__image-box_img" src="../../static/logo.png" mode="aspectFill"></image> -->
-					<image v-if="index < 3" v-for="i in item.cover" :key="i" class="news-list-item__image-box_img" :src="item.cover" mode="aspectFill"></image>
+					<image v-if="index < 3" v-for="(item,index) in item.cover" :key="item" class="news-list-item__image-box_img" :src="`https://images.weserv.nl/?url=${item.cover}`" mode="aspectFill"></image>
 				</view>
 				<view class="news-list-item__content__other">
 					<view class="news-list-item__content__other__label">
@@ -70,6 +70,10 @@
 			item: {
 				type: Object,
 				required: true
+			},
+			isSelf:{
+				type: Boolean,
+				default:false
 			}
 		},
 		methods: {
@@ -95,8 +99,9 @@
 					url: `/pages/news-detail/news-detail?params=${params}`
 				})
 			},
-			emitLongpress(){
-				uni.$emit('deleteActicleLike',this.item._id)
+			emitLongpress() {
+				if(isSelf) return 
+				uni.$emit('deleteActicleLike', this.item._id)
 			}
 		}
 	}
@@ -104,17 +109,23 @@
 
 <style lang="scss">
 	.news-list-item {
-		width: 100%;
+		margin: 30px 10px;
+
 
 		.news-list-item-wrapper {
+			background-color: #f0f0f0;
+			box-shadow: 5px 7px 10px rgba(0, 0, 0, 0.2), -5px -7px 10px #FFFFFF;
+			box-sizing: border-box;
+			padding: 10px 10px;
+			border-radius: 8px;
 			display: flex;
 			flex-direction: row;
 			width: 100%;
 			margin-bottom: .4rem;
 
 			>.news-list-item__image-box {
-				width: 6rem;
-				height: 6rem;
+				width: 7rem;
+				height: 7rem;
 				overflow: hidden;
 				margin: 0 10rpx;
 
@@ -133,8 +144,10 @@
 				margin: 0 10rpx;
 
 				>.news-list-item__content__title {
+					margin-bottom: 20rpx;
 					overflow: hidden;
 					text-overflow: ellipsis;
+					color: #666;
 					display: -webkit-box; //作为弹性伸缩盒子模型显示。
 					-webkit-box-orient: vertical; //设置伸缩盒子的子元素排列方式--从上到下垂直排列
 					-webkit-line-clamp: 2; //显示的行
@@ -153,7 +166,7 @@
 						display: flex;
 						align-items: center;
 						justify-content: center;
-						padding: 2rpx 6rpx;
+						padding: 6rpx 10rpx;
 						margin-right: 11rpx;
 						color: $base-color;
 						border: 1rpx solid $base-color;
@@ -169,16 +182,14 @@
 
 			}
 
+			&.el-hover {
+				box-shadow: 0 0 0 rgba(0, 0, 0, 0.2),
+					0 0 0 rgba(255, 255, 255, 0.2),
+					inset 10px 10px 10px rgba(0, 0, 0, 0.1),
+					inset -10px -10px 10px rgba(255, 255, 255, 1) !important;
+			}
 		}
 
-		&:after {
-			content: '';
-			display: block;
-			width: 100%;
-			height: 1px;
-			background-color: #e3e3e3;
-			margin: .1rem 0 .4rem 0;
-		}
 
 		.isColumn {
 			display: flex;
@@ -186,7 +197,7 @@
 
 			>.news-list-item__content {
 				.news-list-item__content__title {
-					margin-bottom: 10rpx;
+					margin-bottom: 20rpx;
 				}
 
 				>.news-list-item__image-box {
@@ -222,7 +233,7 @@
 
 			>.news-list-item__content {
 				.news-list-item__content__title {
-					margin-bottom: 10rpx;
+					margin-bottom: 20rpx;
 				}
 
 				>.news-list-item__image-box {
@@ -258,5 +269,6 @@
 		}
 
 		/* #endif */
+
 	}
 </style>

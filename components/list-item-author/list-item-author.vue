@@ -1,7 +1,7 @@
 <template>
 	<view class="list-item-author" @longpress="emitLongpress">
 		<view class="list-item-author-image">
-			<image :src="author.avatar" mode="aspectFill"></image>
+			<image :src="`https://images.weserv.nl/?url=${author.avatar}`" mode="aspectFill"></image>
 		</view>
 		<view class="list-item-author__content">
 			<view class="list-item-author__content__title">{{author.author_name}}</view>
@@ -36,7 +36,7 @@
 		display: flex;
 		padding: 20rpx 0;
 		margin: 0 20rpx;
-		
+		flex:1;
 		box-sizing: border-box;
 		border-bottom: 2rpx #F5F5F5 solid;
 
@@ -44,6 +44,7 @@
 			flex-shrink: 0;
 			width: 90rpx;
 			height: 90rpx;
+			border-radius: 8rpx;
 			overflow: hidden;
 			image {
 				width: 100%;
@@ -59,10 +60,10 @@
 			width: 100%;
 
 			.list-item-author__content__title {
-				position: relative;
+				// position: relative;
 				padding-right: 60rpx;
 				font-size: 28rpx;
-				color: #333;
+				color: #666;
 				font-weight: bold;
 				line-height: 1.2;
 			}
@@ -73,7 +74,7 @@
 				font-size: 24rpx;
 
 				.list-item-author__content__desc-label {
-					color: #666;
+					color: #888;
 				}
 
 				.list-item-author__content__des-info {

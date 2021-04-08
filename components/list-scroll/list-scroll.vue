@@ -27,9 +27,14 @@
 
 <script>
 	export default {
-		name: "new-list-scroll",
+		name: "news-list-scroll",
 		props: {
-			list: Array,
+			list: {
+				type:Array,
+				default(){
+					return [];
+				},
+			},
 			current: {
 				type: Number,
 				default: 0
@@ -42,7 +47,8 @@
 			},
 			// #ifdef MP 
 			scrollHeight: {
-				type: Number
+				type: Number,
+				required: true
 			},
 			// #endif
 		},
@@ -52,7 +58,8 @@
 			},
 			listCom() {
 				return this.list
-			}
+			},
+			
 		},
 		data() {
 			return {
@@ -94,7 +101,7 @@
 				});
 			}
 
-		}
+		},
 	}
 </script>
 
