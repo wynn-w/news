@@ -1,15 +1,26 @@
 <template>
 	<view class="news-user">
 		<view class="user__header no-login" v-if="!GET_LOGIN && !GET_AUTH">
-			<login>
-				<view class="user__header__avatar">
+			<!-- #ifdef MP-WEIXIN -->
+			<!-- <login> -->
+				<view class="user__header__avatar" @click="aaaa">
 					<view class="user__header__avatar-box">
 						<!-- <image :src="GET_USER_INFO.avatar" mode="aspectFill"></image> -->
 						<image src="@/static/logo.png" mode="aspectFill"></image>
 					</view>
 					<text class="user__header__name">点击登录</text>
 				</view>
-			</login>
+			<!-- </login> -->
+			<!-- #endif -->
+			<!-- #ifdef H5 -->
+			<view class="user__header__avatar" @click="navToLoginPage">
+				<view class="user__header__avatar-box">
+					<!-- <image :src="GET_USER_INFO.avatar" mode="aspectFill"></image> -->
+					<image src="@/static/logo.png" mode="aspectFill"></image>
+				</view>
+				<text class="user__header__name">点击登录</text>
+			</view>
+			<!-- #endif -->
 		</view>
 		<view class="user__header" v-else>
 
@@ -68,7 +79,7 @@
 				let id = JSON.stringify(this.GET_USER_INFO._id)
 				// #endif
 				// #ifdef H5
-				let id = window.btoa(encodeURIComponent(JSON.stringify(this.GET_USER_INFO.id)))
+				let id = window.btoa(encodeURIComponent(JSON.stringify(this.GET_USER_INFO._id)))
 				// #endif
 				uni.navigateTo({
 					url: `/pages/user-article/user-article?id=${id}`
@@ -78,12 +89,30 @@
 				uni.navigateTo({
 					url: '/pages/feedback/feedback'
 				})
+			},
+			navToLoginPage(){
+				const page=window.btoa(encodeURIComponent(JSON.stringify(this.$mp.page.route)))
+				uni.navigateTo({
+					url: `/pages/login-page/login-page?page=${page}`
+				})
+			},
+			aaaa(){
+				this.$store.dispatch('wx').then(res=>{
+					res.wxAuth()
+				})
 			}
 		},
 		async mounted() {
+			// #ifdef MP-WEIXIN
 			if (this.GET_LOGIN && this.GET_AUTH) {
 				await this.$store.dispatch('asyncgetUserInfo', { userId: this.GET_USER_INFO._id })
 			}
+			// #endif
+			// #ifdef H5
+			if (this.GET_LOGIN) {
+				await this.$store.dispatch('asyncgetUserInfo', { userId: this.GET_USER_INFO._id })
+			}
+			// #endif
 		}
 	}
 </script>
@@ -115,11 +144,11 @@
 				padding-top: 60rpx;
 
 				.user__header__avatar-box {
-					width: 140rpx;
-					height: 140rpx;
+					width: 150rpx;
+					height: 150rpx;
 					border-radius: 50%;
 					overflow: hidden;
-					padding: 20rpx;
+					padding: 10rpx;
 					background-color: #f0f0f0;
 					box-shadow: 20rpx 20rpx 20rpx rgba(0, 0, 0, 0.2), -20rpx -20rpx 20rpx white;
 

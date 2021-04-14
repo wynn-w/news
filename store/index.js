@@ -11,7 +11,12 @@ export default new Vuex.Store({
 		load: {}, // home -> list -> list-item  记录每个 list-item 的页数与 load-more 组件状态
 		input: '', // home-search 
 		searchList: new Array(), // home-search ==> 是否用 set 替换
-		searchHistory: uni.getStorageSync("__history") || [] // home-search 
+		searchHistory: uni.getStorageSync("__history") || [], // home-search 
+		// 用户信息
+		userInfo: uni.getStorageSync("userInfo") || {},
+		isLogin: uni.getStorageSync("isLogin") || false,
+		isAuth: uni.getStorageSync("isAuth") || false,
+		openId: uni.getStorageSync("openId") || false,
 	},
 	getters: {
 		GET_LABEL(state) {
@@ -34,6 +39,18 @@ export default new Vuex.Store({
 		},
 		GET_SEARCH_HISTORY(state) {
 			return state.searchHistory
+		},
+		GET_USER_INFO(state) {
+			return state.userInfo
+		},
+		GET_LOGIN(state) {
+			return state.isLogin
+		},
+		GET_AUTH(state) {
+			return state.isAuth
+		},
+		GET_OPENID(state) {
+			return state.openId
 		}
 	},
 	mutations: {
@@ -64,11 +81,12 @@ export default new Vuex.Store({
 			state.searchList = arg.data
 		},
 		setSearchHistory(state, value) {
-			
+
 			// 对于已有的几率，将其提前到首位；最大长度为 20
 
 			let arr = state.searchHistory
 			const index = arr.indexOf(value)
+
 			if (index > 0) {
 				arr.splice(index, 1)
 			}
@@ -92,7 +110,26 @@ export default new Vuex.Store({
 			}
 			arr.splice(index, 1)
 			uni.setStorageSync('__history', arr)
-		}
+		},
+		setUserInfo(state, user) {
+			// state.userInfo = JSON.parse(user.data)
+			state.userInfo = user.data
+			uni.setStorageSync('userInfo', state.userInfo)
+		},
+		setLogin(state, value) {
+
+			state.isLogin = value
+			uni.setStorageSync('isLogin', state.isLogin)
+			// dispatch('setAuth', true) // 不可行
+		},
+		setAuth(state, value) {
+			state.isAuth = value
+			uni.setStorageSync('isAuth', state.isAuth)
+		},
+		setOpenId(state, value) {
+			state.openId = value
+			uni.setStorageSync('openId', state.openId)
+		},
 	},
 	actions: {
 		async asyncLabel({ commit }, arg) {
@@ -133,7 +170,6 @@ export default new Vuex.Store({
 				.then(res => {
 					const { data } = res
 					commit('setSearchList', { data })
-					console.log(data.length);
 					if (data.length === 0) isNull = true
 				})
 				.catch(err => console.error(err))
@@ -141,6 +177,169 @@ export default new Vuex.Store({
 				reslove({ isNull })
 			})
 		},
+		async asyncgetUserInfo({ commit }, arg) {
+			await $api.getUserInfo(arg)
+				.then(res => {
+					const { data } = res
+					if (res.code === 201) {
+						return res.msg
+					}
+					commit('setUserInfo', { data })
+				})
+				.catch(err => console.error(err))
+			// return new Promise((reslove, reject) => {
+			// 	reslove({ isNull })
+			// })
+		},
+		changeAuth({ commit }, value) {
+			commit('setAuth', value)
+		},
+		// 微信登录注册逻辑
+		async wx({ commit, dispatch, state }, arg) {
+			let auth = state.isAuth
+			let userInfo = {} //临时存储微信返回的用户信息
+			// this 指向 store
+			let wxAuth = async () => {
+
+
+				// 已授权
+				if (auth) {
+					await wxRegister()
+					return
+				}
+				// 未授权
+				await wx.getUserProfile({
+					lang: "zh_CN",
+					desc: "注册"
+				}).then(async res => {
+					const { avatarUrl, gender, language, nickName } = res.userInfo
+					userInfo = {
+						avatarUrl,
+						gender,
+						language,
+						nickName
+					}
+					commit('setAuth', true)
+					await wxRegister(userInfo)
+				}).catch(err => {
+					uni.showModal({
+						title: '提示',
+						content: '授权开启更多功能',
+						success: (res) => {
+							if (res.confirm) {
+								wxAuth()
+							} else if (res.cancel) {
+								uni.navigateBack()
+							}
+						}
+					})
+				})
+			}
+			let wxRegister = async (userInfo) => {
+				let openId = state.openId
+				let code = ''
+				const secretId = '' // 小程序 secretId
+				const appId = '' // 小程序 appId
+
+				if (openId != '' && userInfo._id) {
+					await dispatch('asyncgetUserInfo', { userId: userInfo._id })
+					return uni.navigateBack()
+				}
+				/**
+				 * 本地 openId 不存在
+				 * */
+				await uni.login({
+					provider: "weixin"
+				}).then(res => {
+					code = res[1].code
+				})
+				// 获取openId => 登录注册逻辑都在一起了
+				await uni.request({
+					url: `https://api.weixin.qq.com/sns/jscode2session?appid=${appId}&secret=${secretId}&js_code=${code}&grant_type=authorization_code`
+				}).then(res => {
+					const openId = res[1].data.openid
+					commit('setOpenId', openId)
+					let old = userInfo
+					old.openId = openId
+
+					userInfo = Object.assign({}, userInfo, old)
+
+					$api.addUser(userInfo).then(res => {
+						// 注册
+						const { data } = res
+						userId = data.id
+						dispatch('asyncgetUserInfo', { userId })
+						return uni.navigateBack()
+
+					}).catch(err => {
+						// 登录
+						if (err.code === 201) {
+							let user = {}
+							user.data = err.data[0]
+							commit('setUserInfo', user)
+							commit('setLogin', true)
+							commit('setAuth', true)
+
+						}
+					})
+				})
+			}
+			return {
+				wxAuth,
+				wxRegister
+			}
+		},
+		async h5({ commit, dispatch, state }, arg) {
+			let h5Login = async (data) => {
+				const { login, lastPage } = data
+				$api.addUser({
+						email: login.email,
+						psw: login.psw,
+						platform: "H5-EMAIL"
+					}).then(res => {
+
+						let data = {}
+						data.data = res.data
+						commit('setUserInfo', data)
+						commit('setLogin', true)
+						uni.showToast({
+							title: '登录成功',
+							icon: 'none'
+						})
+						setTimeout(() => {
+							if (/^pages\/tabBar/.test(lastPage)) {
+								uni.switchTab({
+									url: `/${lastPage}`
+								});
+							} else {
+								uni.redirectTo({
+									url: `/${lastPage}`
+								});
+							}
+
+						}, 1000)
+					})
+					.catch(err => {
+						console.log(err);
+					})
+
+			}
+			let h5Register = async (singup) => {
+				$api.addUser(singup).then(res => {
+					// 注册
+					const { data } = res
+					const userId = data.id
+					dispatch('asyncgetUserInfo', { userId })
+					// return uni.navigateBack()
+					console.log('注册成功');
+				})
+
+			}
+			return {
+				h5Login,
+				h5Register
+			}
+		}
 	}
 
 });
