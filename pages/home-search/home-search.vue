@@ -13,18 +13,16 @@
 					<view class="label-box__content">
 						<view class="label-box__content__item" v-for="(item,index) in GET_SEARCH_HISTORY" :key="index" @click="searchItem(item)" @longtap="showDeleteIcon">
 							{{item}}
-							<uni-icons v-if="isDelete" class="item__icon-close" type="clear" size="16" color="#f07373" @click.native.stop="deleteItem(item)"></uni-icons>
+							<uni-icons v-if="isDelete" class="item__icon-close" type="clear" size="16" color="#f1aaa1" @click.native.stop="deleteItem(item)"></uni-icons>
 						</view>
 					</view>
 				</view>
 				<view v-else class="no-data"> 没有搜索历史 </view>
 			</view>
 			<view v-else class="home-search__content">
+				<uni-load-more v-if="isEqureZore" iconType="snow" :status="loading" 
+				:contentText="{ contentdown: `上拉显示更多`, contentrefresh: `正在加载...`, contentnomore: `未找到匹配的搜索结果` }"></uni-load-more>
 				<list-scroll v-if="!isEqureZore && GET_SEARCH_LIST.length > 0" :list="GET_SEARCH_LIST"></list-scroll>
-				<!-- TODO: 在没有数据情况下显示，样式需要优化 -->
-				<view class="no-data" v-else>
-					没找匹配的搜索结果
-				</view>
 			</view>
 		</view>
 	</view>
@@ -48,8 +46,9 @@
 		data() {
 			return {
 				isComfirm: false, //是否已经搜索
-				isEqureZore: false, // 搜索结果是否为空
-				isDelete: false //是否显示搜索历史标签的删除符号
+				isEqureZore: true, // 搜索结果是否为空
+				isDelete: false, //是否显示搜索历史标签的删除符号
+				loading: "loading"
 			};
 		},
 		methods: {
@@ -69,14 +68,22 @@
 				// 回显
 				this.input = item
 			},
-			submit(value) {
+			async submit(value) {
+				console.log(1);
 				if (!value) {
 					this.$store.commit('setSearchList', { data: [] })
 					return
 				}
 				this.$store.commit('setSearchHistory', value)
-				this.$store.dispatch('asyncSearchList', { value }).then(res => {
-					if (res.isNull) this.isEqureZore = true
+				// 获取搜索结果
+				await this.$store.dispatch('asyncSearchList', { value }).then(res => {
+					if (res.isNull) {
+						// this.isEqureZore = true
+						this.loading = 'noMore'
+
+						return
+					}
+					this.isEqureZore = false
 				})
 			},
 
@@ -99,15 +106,15 @@
 					}
 				})
 				// #endif
-				
+
 			},
 			showHeader() { this.isComfirm = true },
 			hideHeader() { this.isComfirm = false },
 
-			inputFocus(){
+			inputFocus() {
 				this.hideHeader()
 			},
-			
+
 			/**
 			 * 页面卸载，重置输入框与搜索结果
 			 * */
@@ -125,8 +132,9 @@
 
 <style lang="scss">
 	page {
-		font-size: 14px;
+		font-size: 28rpx;
 		height: 100%;
+		background-color: #efeeee;
 	}
 
 	.home-search {
@@ -136,23 +144,22 @@
 		height: inherit;
 
 		.home-search__header__label-box {
-			background-color: #fff;
-			margin-bottom: 10px;
+			margin-bottom: 20rpx;
 
 			.label-box__header {
 				display: flex;
 				justify-content: space-between;
-				font-size: 14px;
+				font-size: 28rpx;
 				color: #666;
-				padding: 10px 15px;
-				border-bottom: 1px #f5f5f5 solid;
+				padding: 20rpx 30rpx;
+				// border-bottom: 1rpx #f5f5f5 solid;
 
 				.label-title {
 					color: $base-color;
 				}
 
 				.label-clear {
-					color: #30b33a;
+					color: #6ac770;
 					font-weight: bold;
 				}
 			}
@@ -160,24 +167,26 @@
 			.label-box__content {
 				display: flex;
 				flex-wrap: wrap;
-				padding: 15px;
+				padding: 30rpx;
 				padding-top: 0;
 
 				.label-box__content__item {
-					padding: 2px 10px;
-					margin-top: 12px;
-					margin-right: 10px;
-					border-radius: 5px;
-					border: 1px #666 solid;
-					font-size: 14px;
-					color: #666;
+					padding: 4rpx 20rpx;
+					margin-top: 24rpx;
+					margin-right: 20rpx;
+					border-radius: 10rpx;
+					border: 1rpx #efefef solid;
+					font-size: 28rpx;
 					position: relative;
+					color: #999;
+					background-color: #f0f0f0;
+					box-shadow: 2rpx 2rpx 4rpx #babecc, -2rpx -2rpx 4rpx #ffffff;
 
 					>.item__icon-close {
 						position: absolute;
 						right: -12rpx;
 						top: -12rpx;
-						background-color: #fff;
+						background-color: #f0f0f0;
 						border-radius: 50%;
 					}
 				}
@@ -193,8 +202,11 @@
 		height: 200px;
 		line-height: 200px;
 		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		text-align: center;
-		font-size: 12px;
-		color: #666;
+		font-size: 48rpx;
+		color: #999;
 	}
 </style>
