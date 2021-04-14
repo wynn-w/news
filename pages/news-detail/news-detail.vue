@@ -16,7 +16,7 @@
 				</view>
 				<view class="detail__urs-info__content__article">
 					<text>{{article.create_time}}</text>
-					<text>{{article.browse_count}} 浏览</text>
+					<text>{{ article.browse_count}} 浏览</text>
 					<text>{{article.thumbs_up_count}} 点赞</text>
 				</view>
 			</view>
@@ -90,12 +90,14 @@
 </template>
 
 <script>
-	import emoji from "@/js_sdk/m-emoji/emoji";
+	import emoji from "@/js_sdk/m-emoji/emoji"
 	import uParse from "@/components/gaoyia-parse/parse.vue"
+	import { mapGetters } from "vuex"
 	export default {
 		name:"news-detail",
 		components: { uParse },
 		computed:{
+			...mapGetters(['GET_LOGIN', 'GET_AUTH', 'GET_OPENID', 'GET_USER_INFO']),
 			height(){
 				return this.textarea.height
 			}
@@ -120,7 +122,8 @@
 				isBottom: false, //下拉加载触发两次解决
 				loading:'loading', //load more组件状态
 				contentText:{contentrefresh: "正在加载...",contentnomore: "没有更多评论了"},
-				follow: false
+				follow: false,
+				isScroll: false
 			};
 		},
 		methods: {
@@ -144,7 +147,7 @@
 				uni.showLoading();
 				this.$api.updateAuthorLikes({
 					authorId,
-					// userId
+					userId:this.GET_USER_INFO._id
 				}).then(res=>{
 					uni.hideLoading();
 					this.article.is_author_like = !this.article.is_author_like;
@@ -152,6 +155,7 @@
 						title:this.article.is_author_like?'关注成功':'取消成功',
 						icon:'none'
 					})
+					uni.$emit('updataAuthorLikes')
 				}).catch(err=>{
 					uni.hideLoading();
 				})
@@ -160,7 +164,8 @@
 			addToThumbs(articleId){
 				uni.showLoading()
 				this.$api.updateArticleThumbs({
-					articleId
+					articleId,
+					userId:this.GET_USER_INFO._id
 				}).then(res=>{
 					uni.hideLoading();
 					this.article.is_thumbs_up=true;
@@ -176,7 +181,8 @@
 			addToLike(articleId){
 				uni.showLoading()
 				this.$api.updateArticleLikes({
-					articleId
+					articleId,
+					userId:this.GET_USER_INFO._id
 				}).then(res=>{
 					uni.hideLoading()
 					this.article.is_like = !this.article.is_like
@@ -210,6 +216,10 @@
 					})
 					return
 				}
+				uni.showToast({
+					icon:"loading",
+					title:''
+				})
 				await this.$api.checkWords(this.popupValue).then(res=>{
 					if(res && res.length === 0 ){
 						this.isPass = true
@@ -220,6 +230,7 @@
 						image:"/static/tRefresh/fail.png",
 						title:'当前输入存在敏感词汇'
 					})
+					uni.hideToast()
 					return
 				}
 				this.updateComment({content:this.popupValue,...this.replyProps})
@@ -227,11 +238,12 @@
 			updateComment(content){
 				const data = {
 					articleId: this.article._id,
+					userId:this.GET_USER_INFO._id,
 					...content
 				}
 				this.$api.updataComment(data).then(res=>{
 					this.$refs.popup.close()
-					this.getArticleComments()
+					this.getArticleComments(true)
 					
 					uni.showToast({
 						title:"评论成功",
@@ -241,8 +253,12 @@
 				})
 			},
 			// 获取评论
-			getArticleComments(){
-				this.$api.getComments({
+			async getArticleComments(value){
+				const isUpdate = value  || false
+				// if(value){
+				// 	this.commentsPage = 0
+				// }
+				await this.$api.getComments({
 					articleId: this.article._id,
 					page:this.commentsPage,
 					pageSize:this.commentsPageSize
@@ -255,6 +271,12 @@
 						return
 					}
 					this.isBottom = false
+					// 当前操作为评论刷新触发
+					if(isUpdate){
+						this.commentList = Object.assign({},this.commentList,data)
+						return 
+					}
+					// 触底加载触发
 					let old = JSON.parse(JSON.stringify(this.commentList))
 					old.push(...data)
 					this.commentList=old
@@ -327,17 +349,19 @@
 					}
 				}
 			}
-			
 		},
-		onLoad(optios) {
+		async onLoad(optios) {
 			this.article =  this.formatParma(optios.params)
 			this.getDetail()
-			this.getArticleComments()
+			
 			this.InitEmoji(emoji)
+			this.getArticleComments(true)
+			
 			
 		},
 		onReachBottom(){
 			if(this.isBottom)return
+			const old  = this.commentsPage
 			this.isBottom = true
 			this.commentsPage++
 			this.getArticleComments()
@@ -395,7 +419,7 @@
 				>.detail__urs-info__content__article {
 					color: #999;
 
-					text:not(:first-child) {
+					text:not(:last-child) {
 						margin-right: 20rpx;
 					}
 				}
