@@ -1,18 +1,19 @@
 <template>
-	<view class="comment-wrapper">
+	<view class="comment-wrapper" :class="{['isReply']:reply}">
 		<view class="comment-wrapper__header">
+
 			<view class="comment-wrapper__header-avatar">
 				<!-- <image :src="comment.avatar" mode="aspectFill"></image> -->
 				<image src="@/static/logo.png" mode="aspectFill"></image>
 			</view>
 			<view class="comment-wrapper__header-info">
-				
+
 				<view v-if="!comment.is_reply" class="comment-wrapper__header-info__usr-name">
 					{{comment.author.author_name}}
 				</view>
 				<view v-else class="comment-wrapper__header-info__usr-name">
 					{{comment.author.author_name}} <text class="reply-text">回复</text> {{comment.to}}
-					
+
 				</view>
 				<text class="comment-wrapper__header-info__time">{{comment.create_time | timeFomat}}</text>
 			</view>
@@ -23,10 +24,16 @@
 			<view class="comment-wrapper__info">
 				<text class="comment-wrapper__info__button" @click="commentReply({comment,isReply:reply})">回复</text>
 			</view>
-			<view class="comment-wrapper__reply" v-for="item in comment.replys" :key="item.comment_id">
-				<news-comment :comment="item" reply @reply="commentReply"></news-comment>
+			<view class="comment-wrapper__reply">
+				<view class="comment-wrapper__reply-list">
+					<news-comment v-if="index < 3 || showAll" v-for="(item,index) in comment.replys" :key="item.comment_id" :comment="item" reply @reply="commentReply"></news-comment>
+				</view>
+				<view class="comment-wrapper__reply__showAll" v-if="comment.replys.length > 3 && !showAll" @click="showRest">
+					共{{ comment.replys.length }}条回复 >
+				</view>
 			</view>
 		</view>
+
 	</view>
 </template>
 
@@ -34,10 +41,13 @@
 	// 递归调用
 	import newsComment from "@/components/news-comment/news-comment.vue"; //适配小程序
 	import { parseTime } from '@/utils/utils.js';
+
+	import newsCommentReply from './news-comment-reply.vue'
 	export default {
 		name: "news-comment",
 		components: {
-			newsComment
+			newsComment,
+			newsCommentReply
 		},
 		props: {
 			comment: {
@@ -51,6 +61,11 @@
 				default: false
 			}
 		},
+		// watch:{
+		// 	comment(newvalue){
+		// 	console.log(newvalue)
+		// 	}
+		// },
 		filters: {
 			timeFomat(value) {
 				return parseTime(value)
@@ -59,7 +74,7 @@
 		},
 		data() {
 			return {
-
+				showAll: false
 			};
 		},
 		methods: {
@@ -72,13 +87,15 @@
 				}
 				content.replyTo = this.comment.author.author_name //被回复的人
 				content.comment.commentId = this.comment.comment_id //当前组件接收父类的
+				content.id = this.comment._id //当前组件接收父类的
 				// 回复对象为 文章评论 -> 直接传
 				this.$emit("reply", content)
+			},
+			showRest() {
+				this.showAll = !this.showAll
 			}
-		},
-		mounted() {
-			// console.log(this.comment);
 		}
+
 	}
 </script>
 
@@ -105,7 +122,7 @@
 			.comment-wrapper__header-info {
 				display: flex;
 				flex-direction: column;
-				padding-left: 15px;
+				padding: 0 15px;
 				font-size: 12px;
 				color: #999;
 				line-height: 1;
@@ -113,7 +130,7 @@
 				.comment-wrapper__header-info__usr-name {
 					margin-bottom: 10px;
 					font-size: 14px;
-					color: #333;
+					color: #567ec7;
 
 					.reply-text {
 						margin: 0 10px;
@@ -143,13 +160,33 @@
 			}
 
 			.comment-wrapper__reply {
+				background-color: #efeeee;
 				display: flex;
+				flex-direction: column;
 				margin: 15px 0;
-				padding: 0 10px;
-				border: 1px #eee solid;
+				.comment-wrapper__reply__showAll{
+					padding:0 30rpx 10rpx 30rpx;
+					color: #567ec7;
+				}
+			}
+
+			.comment-wrapper__reply:not(:first-child) {
+				// 	// margin-bottom: 0;
+				// color: red;
+				// 
+
+
 			}
 
 		}
 
+		&.isReply {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 15px;
+			background-color: #efeeee;
+			width: 100%;
+
+		}
 	}
 </style>

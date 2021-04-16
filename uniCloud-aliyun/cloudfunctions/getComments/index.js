@@ -3,23 +3,24 @@ const db = uniCloud.database();
 const dbCmd = db.command.aggregate
 exports.main = async (event, context) => {
 	const {
-		userId = '',
-			articleId,
-			page = 1,
-			pageSize = 10
+		articleId,
+		page = 1,
+		pageSize = 10
 	} = event
 
-	const list = await db.collection('article').aggregate()
+	const list = await db.collection('comment').aggregate()
 		.match({
-			_id: articleId
-		}).unwind('$comments') //拆分 comments 字段
+			article_id: articleId
+		})
 		.project({
-			_id: 0,
+			// article_id: 1,
+			// _id:1,
 			comments: 1
 		})
+		.unwind('$comments')//返回以comments字段为根节点的数据集
 		.replaceRoot({
 			newRoot: '$comments'
-		}) //返回以comments字段为根节点的数据集
+		}) 
 		.skip((page - 1) * pageSize) //跳过的数据
 		.limit(pageSize)
 		.end()

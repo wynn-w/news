@@ -8,7 +8,7 @@
 		<view class="detail__urs-info">
 			<view class="detail__urs-info__avatar">
 				<!-- <image src="../../static/logo.png" mode="" mode="aspectFill"></image> -->
-				<image :src="article.author.avatar" mode="" mode="aspectFill"></image>
+				<image :src="`https://images.weserv.nl/?url=${article.author.avatar}`" mode="" mode="aspectFill"></image>
 			</view>
 			<view class="detail__urs-info__content">
 				<view class="detail__urs-info__content__urs-name">
@@ -220,49 +220,42 @@
 					icon:"loading",
 					title:''
 				})
-				await this.$api.checkWords(this.popupValue).then(res=>{
-					if(res && res.length === 0 ){
-						this.isPass = true
-					}
-				})
-				if(!this.isPass){
-					uni.showToast({
-						image:"/static/tRefresh/fail.png",
-						title:'当前输入存在敏感词汇'
-					})
-					uni.hideToast()
-					return
-				}
-				this.updateComment({content:this.popupValue,...this.replyProps})
+				// await this.$api.checkWords(this.popupValue).then(res=>{
+				// 	if(res && res.length === 0 ){
+				// 		uni.showToast({
+				// 			image:"/static/tRefresh/fail.png",
+				// 			title:'当前输入存在敏感词汇'
+				// 		})
+				// 		uni.hideToast()
+				// 		return new Promise((resolve, reject) => {})
+				// 	}
+				// }).then(()=>{
+					this.updateComment({content:this.popupValue,...this.replyProps})
+				// }).catch(err=>console.error(err))
 			},
-			updateComment(content){
+			 updateComment(arg){
 				const data = {
 					articleId: this.article._id,
 					userId:this.GET_USER_INFO._id,
-					...content
+					...arg
 				}
-				this.$api.updataComment(data).then(res=>{
+				this.$api.updataComment(data).then(async res=>{
 					this.$refs.popup.close()
-					this.getArticleComments(true)
+					await this.getArticleComments(true)
 					
-					uni.showToast({
-						title:"评论成功",
-						icon:"success"
-					})
+					
 					this.clearCache()
 				})
 			},
 			// 获取评论
 			async getArticleComments(value){
 				const isUpdate = value  || false
-				// if(value){
-				// 	this.commentsPage = 0
-				// }
 				await this.$api.getComments({
 					articleId: this.article._id,
 					page:this.commentsPage,
 					pageSize:this.commentsPageSize
 				}).then(res=>{
+					
 					const {data} = res
 					if(data.length === 0){
 						this.commentsPage--
@@ -274,6 +267,10 @@
 					// 当前操作为评论刷新触发
 					if(isUpdate){
 						this.commentList = Object.assign({},this.commentList,data)
+						uni.showToast({
+							title:"评论成功",
+							icon:"success"
+						})
 						return 
 					}
 					// 触底加载触发
@@ -288,6 +285,7 @@
 				this.replyProps={
 					'commentId' : res.comment.commentId,	 // 被回复评论 ID
 					'isReply': res.isReply,					 // 递归组件 标记
+					'rootCommentId':res.id
 				}
 				this.replyTo=res.replyTo					 // 被回复对象名字
 				// 当回复对象为 递归组件
@@ -355,7 +353,7 @@
 			this.getDetail()
 			
 			this.InitEmoji(emoji)
-			this.getArticleComments(true)
+			this.getArticleComments()
 			
 			
 		},
@@ -459,7 +457,7 @@
 				}
 				.comment-content {
 					padding: 0 30rpx;
-					width: 95%;
+					// width: 95%;
 					border: 1rpx #eee solid;
 				}
 			}
