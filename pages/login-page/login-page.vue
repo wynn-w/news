@@ -7,11 +7,11 @@
 			</view>
 			<view class="login-page__header__other" v-if="toLogin">
 				<text>没有帐号，</text>
-				<text @click="changeToSingup">点击注册</text>
+				<text @click="changeTo">点击注册</text>
 			</view>
 			<view class="login-page__header__other" v-else>
 				<text>已有帐号，</text>
-				<text @click="changeToLogin">点击登录</text>
+				<text @click="changeTo">点击登录</text>
 			</view>
 		</view>
 		<view class="login-page__main">
@@ -19,15 +19,15 @@
 				<view class="form-cell" v-if="toLogin">
 					<view class="form-field">
 						<text class="form-field__title">邮箱</text>
-						<input-box ref="loginEmail" v-model="login.email" type="text" placeholder="请输入邮箱" maTop="15" maBtm="15"></input-box>
+						<input-box ref="loginEmail" v-model="login.email" key="loginemail" type="text" :verification="['isNull','isEmail']" :verificationTip="['密码不能为空','邮箱格式不正确']" maTop="15" maBtm="15"></input-box>
 					</view>
 					<view class="form-field">
 						<text class="form-field__title">密码</text>
-						<input-box ref="loginPassword" v-model="login.psw" type="password" placeholder="请输入密码" maTop="15" maBtm="15"></input-box>
+						<input-box ref="loginPassword" v-model="login.psw" key="loginpassword" type="password" :verification="['isNull','code']" :verificationTip="['密码不能为空','密码由数字、字母和英文标点符号中至少两种组成，且长度在6-16位']" maTop="15" maBtm="15"></input-box>
 					</view>
 					<view class="form-field btn-control">
 						<button class="submit_btn" hover-class="el-hover" hover-stay-time="100" hover-start-time="0" size='mini' @click="loginSubmit">登录</button>
-						<text class="forgetPsw">
+						<text class="forgetPsw" @click="forgetPsw">
 							忘记密码
 						</text>
 					</view>
@@ -36,14 +36,14 @@
 				<view class="form-cell" v-else>
 					<view class="form-field">
 						<text class="form-field__title">用户名</text>
-						<input-box ref="singupName" v-model="singup.name" type="text" :verification="['isNull','name']" :verificationTip="['用户名不能为空','用户名由 4 ~ 10 位字符组成']" maTop="15" maBtm="15"></input-box>
+						<input-box ref="singupName" v-model="singup.name" key="singupname" type="text" :verification="['isNull','name']" :verificationTip="['用户名不能为空','用户名由 4 ~ 10 位字符组成']" maTop="15" maBtm="15"></input-box>
 					</view>
 					<view class="form-field">
 						<view class="form-field__title">
 
 							<text>邮箱</text><text class="error" v-if="emailErr !=''">{{`*`+emailErr}}</text>
 						</view>
-						<input-box ref="singupEmail" v-model="singup.email" type="text" :verification="['isNull','isEmail']" :verificationTip="['邮箱不能为空','邮箱格式不正确']" maTop="15" maBtm="15"></input-box>
+						<input-box ref="singupEmail" v-model="singup.email" key="singupemail" type="text" :verification="['isNull','isEmail']" :verificationTip="['邮箱不能为空','邮箱格式不正确']" maTop="15" maBtm="15"></input-box>
 
 					</view>
 					<view class="form-field">
@@ -58,7 +58,7 @@
 					</view>
 					<view class="form-field">
 						<text class="form-field__title">密码</text>
-						<input-box ref="singupPassword" v-model="singup.psw" type="password" :verification="['isNull','isPassword']" :verificationTip="['密码不能为空','密码格式不正确']" maTop="15" maBtm="15"></input-box>
+						<input-box ref="singupPassword" v-model="singup.psw" type="password" :verification="['isNull','isPassword']" :verificationTip="['密码不能为空','密码由数字、字母和英文标点符号中至少两种组成，且长度在6-16位']" maTop="15" maBtm="15"></input-box>
 					</view>
 					<view class="form-field btn-control">
 						<button class="submit_btn" hover-class="el-hover" hover-stay-time="100" hover-start-time="0" size='mini' @click="singupSubmit">注册</button>
@@ -74,7 +74,6 @@
 				</view>
 			</view>
 		</view>
-		<login ref='login' style="display: none;"></login>
 	</view>
 
 </template>
@@ -82,6 +81,7 @@
 <script>
 	import inputBox from '@/components/input-box/input-box';
 	export default {
+		name: 'login-page',
 		components: {
 			inputBox
 		},
@@ -130,6 +130,7 @@
 				let objValue = Object.values(obj)
 				// 登录页
 				if (this.toLogin) {
+
 					for (let i = 0; i < objValue.length; i++) {
 						if (objValue[i] == 'Name') continue
 						if (objValue[i] == 'Code') continue
@@ -141,68 +142,80 @@
 				}
 				// 注册页
 				flag = Array.from(Object.values(obj)).every(value =>
-					this.$refs[`${singup}${value}`].getValue() !== ''
+					this.$refs[`${singup}${value}`].getValue() !== '' || false
 				)
+
 				// 注册页 code
 				this.$refs[`singupCode`].getValue() == '' && (flag = false)
 				return flag
 			},
 			async loginSubmit() {
-				if (this.jiaoyan()) {
-					await this.$store.dispatch('h5').then(res => {
-						res.h5Login({
-							login: this.login,
-							lastPage: this.lastPage
+				if (!this.jiaoyan()) return;
+				let captcha1 = new TencentCaptcha('', async (res) => {
+					if (res.ret === 0) {
+
+						await this.$store.dispatch('h5').then(res => {
+							res.h5Login({
+								login: this.login,
+								lastPage: this.lastPage
+							})
+
 						})
-						
-					})
-				}
+					}
+				})
+
 			},
 			async singupSubmit() {
-				if (this.jiaoyan()) {
-					// 1.校验验证码
-					await this.$api.sendEmail({
-							code: this.code,
-							method: 'validateCode',
-							email: this.singup.email,
-							codeId: this.emailId,
-							effectiveTime: 500
-						})
-						.then(res => {
-							// 验证是失败时，promise 中断
-							if (res.result.status == 1) {
-								console.log('验证通过 ')
-							} else if (res.result.status == 0) {
-								uni.showToast({
-									title: '验证码错误',
-									icon: 'none'
-								})
-								console.log('验证码错误');
-								return new Promise((resolve, reject) => {})
-							} else {
-								uni.showToast({
-									title: '验证码失效',
-									icon: 'none'
-								})
-								console.log('验证码失效');
-								return new Promise((resolve, reject) => {})
-							}
-						})
-						// 注册逻辑
-						.then(async () => {
-							let copy = JSON.parse(JSON.stringify(this.singup))
-							copy.platform = 'H5-EMAIL'
-							copy.type = 'singup'
-							let data = copy
-							await this.$store.dispatch('h5').then(res => {
-								res.h5Register(data)
-								// .then(res => console.log(res))
+				if (!this.jiaoyan()) return
+				let captcha1 = new TencentCaptcha('', async (res) => {
+					if (res.ret === 0) {
+						// 1.校验验证码
+						await this.$api.sendEmail({
+								code: this.code,
+								method: 'validateCode',
+								email: this.singup.email,
+								codeId: this.emailId,
+								effectiveTime: 500
 							})
-						})
+							.then(res => {
+								// 验证是失败时，promise 中断
+								if (res.result.status == 1) {
+									console.log('验证通过 ')
+								} else if (res.result.status == 0) {
+									uni.showToast({
+										title: '验证码错误',
+										icon: 'none'
+									})
+									console.log('验证码错误');
+									return new Promise((resolve, reject) => {})
+								} else {
+									uni.showToast({
+										title: '验证码失效',
+										icon: 'none'
+									})
+									console.log('验证码失效');
+									return new Promise((resolve, reject) => {})
+								}
+							})
+							// 注册逻辑
+							.then(async () => {
+								let copy = JSON.parse(JSON.stringify(this.singup))
+								copy.platform = 'H5-EMAIL'
+								copy.type = 'singup'
+								let data = copy
+								await this.$store.dispatch('h5').then(res => {
+									res.h5Register(data)
+									// .then(res => console.log(res))
+								})
+							})
+					}
+				})
+				captcha1.show();
 
-				}
+
 			},
-			changeToLogin() {
+
+			changeTo() {
 				this.toLogin = !this.toLogin
 			},
 			// 验证码获取
@@ -257,11 +270,19 @@
 					}, 1000)
 				}
 
+			},
+			forgetPsw() {
+				uni.navigateTo({
+					url: '/pages/forget-password/forget-password'
+				})
 			}
+
 
 		},
 		onLoad(option) {
-			this.lastPage = JSON.parse(decodeURIComponent(window.atob(option.page)))
+			if (option.page) {
+				this.lastPage = JSON.parse(decodeURIComponent(window.atob(option.page)))
+			}
 		}
 	}
 </script>

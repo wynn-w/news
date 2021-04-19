@@ -26,12 +26,12 @@
 						<view class="form-field__title">
 							<text>邮箱</text><text class="error" v-if="emailErr !=''">{{`*`+emailErr}}</text>
 						</view>
-						<input-box ref="email" v-model="email" type="text" :verification="['isNull','isEmail']" :verificationTip="['邮箱不能为空','邮箱格式不正确']" maTop="15" maBtm="15"></input-box>
+						<input-box ref="email" v-model="email" key="email" type="text" :verification="['isNull','isEmail']" :verificationTip="['邮箱不能为空','邮箱格式不正确']" maTop="15" maBtm="15"></input-box>
 					</view>
 					<view class="form-field">
 						<text class="form-field__title">验证码</text>
 						<view class="form-field__container">
-							<input-box class="form-field__container__input" ref="code" v-model="code" type="text" :verification="['isNull','code']" :verificationTip="['验证码不能为空','请输入6位有效验证码']" maTop="15" maBtm="15"></input-box>
+							<input-box class="form-field__container__input" ref="code" v-model="code"  type="text" :verification="['isNull','code']" :verificationTip="['验证码不能为空','请输入6位有效验证码']" maTop="15" maBtm="15"></input-box>
 							<view class="form-field__container__get-code" @click="sendEmail">
 								{{time===''? '发送验证码':`${time}s 后获取`}}
 							</view>
@@ -46,7 +46,7 @@
 				<view class="form-cell">
 					<view class="form-field">
 						<text class="form-field__title">新密码</text>
-						<input-box ref="password" v-model="psw" type="password" :verification="['isNull','isPassword']" :verificationTip="['密码不能为空','密码由数字、字母和英文标点符号中至少两种组成，且长度在6-16位']" maTop="15" maBtm="15"></input-box>
+						<input-box ref="password" v-model="psw" key="password" type="password" :verification="['isNull','isPassword']" :verificationTip="['密码不能为空','密码由数字、字母和英文标点符号中至少两种组成，且长度在6-16位']" maTop="15" maBtm="15"></input-box>
 					</view>
 					<view class="form-field btn-control">
 						<button class="submit_btn" hover-class="el-hover" hover-stay-time="100" hover-start-time="0" size='mini' @click="resetPassword"></button>
