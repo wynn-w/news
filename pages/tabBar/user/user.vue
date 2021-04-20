@@ -3,13 +3,13 @@
 		<view class="user__header no-login" v-if="!GET_LOGIN && !GET_AUTH">
 			<!-- #ifdef MP-WEIXIN -->
 			<!-- <login> -->
-				<view class="user__header__avatar" @click="aaaa">
-					<view class="user__header__avatar-box">
-						<!-- <image :src="GET_USER_INFO.avatar" mode="aspectFill"></image> -->
-						<image src="@/static/logo.png" mode="aspectFill"></image>
-					</view>
-					<text class="user__header__name">点击登录</text>
+			<view class="user__header__avatar" @click="aaaa">
+				<view class="user__header__avatar-box">
+					<!-- <image :src="GET_USER_INFO.avatar" mode="aspectFill"></image> -->
+					<image src="@/static/logo.png" mode="aspectFill"></image>
 				</view>
+				<text class="user__header__name">点击登录</text>
+			</view>
 			<!-- </login> -->
 			<!-- #endif -->
 			<!-- #ifdef H5 -->
@@ -48,7 +48,7 @@
 			</view>
 		</view>
 		<view class="user__content">
-			<view class="user__content__list" hover-class="el-hover" hover-stay-time="100" hover-start-time="0" @click="openActicleList">
+			<view class="user__content__list"  hover-class="el-hover" hover-stay-time="100" hover-start-time="0" @click="openActicleList">
 				<view class="user__content__list-title">
 					<uni-icons class="icons" type="contact" size="16" color="#999"></uni-icons>
 					<text>我的文章</text>
@@ -74,7 +74,16 @@
 			...mapGetters(['GET_LOGIN', 'GET_AUTH', 'GET_OPENID', 'GET_USER_INFO'])
 		},
 		methods: {
-			openActicleList() {
+			async openActicleList() {
+				let flag = true
+
+				if (!this.GET_LOGIN) {
+					await this.isULogin(flag)
+					if (!this.GET_LOGIN) {
+						return flag = false
+					}
+				}
+				if (!flag) return
 				// #ifdef MP
 				let id = JSON.stringify(this.GET_USER_INFO._id)
 				// #endif
@@ -85,21 +94,33 @@
 					url: `/pages/user-article/user-article?id=${id}`
 				})
 			},
-			openFeedback() {
+			async openFeedback() {
+				let flag = true
+				if (!this.GET_LOGIN) {
+					await this.isULogin(flag)
+					if (!this.GET_LOGIN) {
+						return flag = false
+					}
+				}
+				if (!flag) return
 				uni.navigateTo({
 					url: '/pages/feedback/feedback'
 				})
 			},
-			navToLoginPage(){
-				const page=window.btoa(encodeURIComponent(JSON.stringify(this.$mp.page.route)))
+			navToLoginPage() {
+				const page = window.btoa(encodeURIComponent(JSON.stringify(this.$mp.page.route)))
 				uni.navigateTo({
 					url: `/pages/login-page/login-page?page=${page}`
 				})
 			},
-			aaaa(){
-				this.$store.dispatch('wx').then(res=>{
+			aaaa() {
+				this.$store.dispatch('wx').then(res => {
 					res.wxAuth()
 				})
+			},
+			async isULogin(flag) {
+				await this.$api.isULogin({ $store: this.$store, currentUrl: this.$mp.page.route })
+				
 			}
 		},
 		async mounted() {
@@ -113,6 +134,7 @@
 				await this.$store.dispatch('asyncgetUserInfo', { userId: this.GET_USER_INFO._id })
 			}
 			// #endif
+
 		}
 	}
 </script>

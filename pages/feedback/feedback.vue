@@ -35,7 +35,12 @@
 </template>
 
 <script>
+	import { mapGetters } from 'vuex'
 	export default {
+		name: 'feedback',
+		computed: {
+			...mapGetters(['GET_USER_INFO'])
+		},
 		data() {
 			return {
 				imageList: [],
@@ -99,6 +104,10 @@
 			 * 上传
 			 * */
 			async submit() {
+				if (!this.GET_USER_INFO._id) {
+					await this.isULogin()
+					if (!this.GET_USER_INFO._id) return
+				}
 				if (!this.content) {
 					uni.showToast({
 						title: '请输入反馈内容!',
@@ -133,7 +142,7 @@
 			updateFeedBack(arg) {
 				const { content, feedbackImages } = arg
 				this.$api.updateFeedback({
-					// userId:'',
+					userId: this.GET_USER_INFO._id,
 					content,
 					feedbackImages
 				}).then(res => {
@@ -167,6 +176,9 @@
 				uni.switchTab({
 					url: '/pages/tabBar/user/user'
 				})
+			},
+			async isULogin(flag) {
+				await this.$api.isULogin({ $store: this.$store, currentUrl: this.$mp.page.route })
 			}
 		}
 	}
@@ -188,7 +200,7 @@
 			margin: 20rpx;
 			background-color: #f0f0f0;
 			border: 1rpx solid #efeeee;
-			box-shadow: 3px 5px 10px rgba(0, 0, 0, 0.2), -4px -5px 10px #ffffff;
+			box-shadow: 6rpx 10rpx 20rpx rgba(0, 0, 0, 0.2), -8rpx -10rpx 20rpx #ffffff;
 			// 20rpx 20rpx 20rpx rgba(0, 0, 0, 0.2), -20rpx -20rpx 20rpx white;
 		}
 
@@ -290,8 +302,8 @@
 		.el-hover {
 			opacity: 0.9;
 			box-shadow: 0 0 0 #e7a0a0,
-				0 0 0 #ffb4ab, 
-				inset 20rpx 20rpx 10rpx #e7a0a0, 
+				0 0 0 #ffb4ab,
+				inset 20rpx 20rpx 10rpx #e7a0a0,
 				inset -20rpx -20rpx 10rpx #ffb4ab !important;
 		}
 

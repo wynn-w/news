@@ -2,29 +2,28 @@
 	<view class="news-follow">
 		<!-- 导航 -->
 		<view class="follow__header">
-			<view class="follow__header__item" :class="{'active': choose === 0}" @click="navChoose">
+			<view class="follow__header__item" :class="{'active': choose === 0}" @click="navChoose(0)">
 				文章
 			</view>
-			<view class="follow__header__item" :class="{'active': choose === 1 }" @click="navChoose">
+			<view class="follow__header__item" :class="{'active': choose === 1 }" @click="navChoose(1)">
 				作者
 			</view>
 		</view>
 		<!-- 主体 -->
 		<view class="follow__content">
 			<view class="follow__content__article" :style="{height:height}" v-if="choose === 0">
-				<uni-load-more v-if="acticleLiks.length === 0 " iconType="snow" status="loading"></uni-load-more>
+				<uni-load-more v-if="acticleLiks.length === 0 " iconType="snow" :status="load[choose].loading"></uni-load-more>
 				<list-scroll :list="acticleLiks" @loadMore="loadMore" :load="load" :pageSize="load[choose].pageSize" :current="choose"></list-scroll>
 			</view>
 			<view class="follow__content__author" v-else :style="{height:height}">
-				<uni-load-more v-if="authorLiks.length === 0 " iconType="snow" status="loading"></uni-load-more>
+				<uni-load-more v-if="authorLiks.length === 0 " iconType="snow" :status="load[choose].loading"></uni-load-more>
 				<list-scroll-slot :load="load" :pageSize="load[choose].pageSize" :current="choose">
 					<uni-swipe-action threshold=60>
-						<uni-swipe-action-item show="right" v-for="(item,index) in authorLiks" :key="item.id">
-							<list-item-author :author="item" @click="onClick(index)"> </list-item-author>
-
+						<uni-swipe-action-item class="aass" data-aa='a' hover-class="el-hover" hover-stay-time="100" hover-start-time="0" show="right" v-for="(item,index) in authorLiks" :key="item.id">
+							<list-item-author :author="item" @click="navToAuthor"> </list-item-author>
 							<template v-slot:right>
 								<view @click="deleteAuthorLike(item.id)" class="btn-delete-wrapper">
-									<text class="btn-delete">删除</text>
+									<text class="btn-delete">取关</text>
 								</view>
 							</template>
 						</uni-swipe-action-item>
@@ -38,8 +37,13 @@
 </template>
 
 <script>
+	import { mapGetters } from "vuex";
 	export default {
 		name: "news-follow",
+		computed: {
+			...mapGetters(['GET_LOGIN', 'GET_AUTH', 'GET_OPENID', 'GET_USER_INFO']),
+
+		},
 		data() {
 			return {
 				choose: 0,
@@ -53,7 +57,8 @@
 			}
 		},
 		methods: {
-			navChoose() {
+			navChoose(value) {
+				if (this.choose === value) return
 				if (this.choose === 1) {
 					return this.choose = 0
 				}
@@ -63,16 +68,16 @@
 				}
 			},
 			deleteAuthorLike(id) {
-				// console.log(id);
 				this.$api.updateAuthorLikes({
 					authorId: id,
-					// userId:''
+					userId: this.GET_USER_INFO._id
 				}).then(res => {
 					if (res.code === 200) {
 						this.loadInit()
 						this.updataAuthor()
 						uni.showToast({
-							title: res.msg
+							title: '取消关注成功',
+							icon: 'none'
 						})
 					}
 				})
@@ -87,15 +92,17 @@
 						if (res.confirm) {
 							this.$api.updateArticleLikes({
 								articleId: id,
-								// userId:''
+								userId: this.GET_USER_INFO._id
 							}).then(res => {
 								if (res.code === 200) {
 									this.loadInit()
 									this.updateActicle()
+									uni.showToast({
+										title: '取消收藏成功',
+										icon: 'none'
+									})
 								}
 							})
-						} else if (res.cancel) {
-
 						}
 					}
 				});
@@ -105,8 +112,9 @@
 				if (!this.load[this.choose]) {
 					this.loadInit()
 				}
+				if (!this.GET_USER_INFO._id) return
 				this.$api.getAuthorLikes({
-					// userId:'',
+					userId: this.GET_USER_INFO._id,
 					page: this.load[this.choose].page,
 					pageSize: this.load[this.choose].pageSize
 				}).then(res => {
@@ -131,16 +139,19 @@
 				if (!this.load[this.choose]) {
 					this.loadInit()
 				}
+				if (!this.GET_USER_INFO._id) return
 				this.$api.getArticleLikes({
-					// userId:'',
+					userId: this.GET_USER_INFO._id,
 					page: this.load[this.choose].page,
 					pageSize: this.load[this.choose].pageSize
 				}).then(res => {
+
 					const { data } = res
 					if (data.length === 0) {
 						let old = this.load[this.choose]
 						old.loading = "noMore"
 						this.load = Object.assign({}, this.load, old)
+						this.$forceUpdate()
 						return
 					}
 					// loadMore 触发的更新
@@ -154,6 +165,7 @@
 				})
 			},
 			loadMore() {
+
 				if (this.loadMoreTag) return
 				this.loadMoreTag = true
 				if (this.load[this.choose].loading === "noMore") return
@@ -169,19 +181,7 @@
 			// this.updateAuthor({ flag: 'loadMore' })
 
 			// },
-			/**
-			 * list-item-author 组件相关
-			 * */
-			swipeChange(e, index) {
-				console.log('当前状态：' + open + '，下标：' + index)
-			},
-			clicked(index) {
-				console.log(`下标：` + index)
-			},
-			onClick() {
-				console.log(122);
-				// console.log('点击了' + (e.position === 'left' ? '左侧' : '右侧') + e.content.text + '按钮')
-			},
+
 			/**
 			 *  初始化相关
 			 * */
@@ -223,15 +223,44 @@
 					// this.load[this.choose].page = 1
 					this.deleteActicleLike(res)
 				})
-			}
+			},
+			async isULogin() {
+				await this.$api.isULogin({ $store: this.$store, currentUrl: this.$mp.page.route })
 
+			}
 		},
-		onLoad() {
+		async onLoad() {
+			this.calcHeight()
 			this.loadInit()
 			this.eventListener()
+
+
 			this.updateActicle()
-			this.calcHeight()
+
 		},
+		async onShow() {
+			if (!this.GET_LOGIN) {
+				// #ifdef MP-WEIXIN
+				uni.showModal({
+					title: '提示',
+					content: '当前还未登录，登录后解锁',
+					success: async (res) => {
+						if (res.confirm) {
+							await this.isULogin()
+						} else if (res.cancel) {
+							console.log('取消')
+						}
+						
+
+					}
+				})
+				// #endif
+				// #ifdef H5
+					await this.isULogin()
+				// #endif
+				
+			}
+		}
 	}
 </script>
 
@@ -239,6 +268,7 @@
 	page {
 		height: 100%;
 		display: flex;
+		background-color: #efeeee;
 	}
 
 	.news-follow {
@@ -249,10 +279,10 @@
 
 
 		.follow__header {
-			width: 100%;
 			display: flex;
 			flex-direction: row;
 			justify-content: space-around;
+			margin: 20rpx;
 			margin-bottom: 40rpx;
 			box-sizing: border-box;
 
@@ -264,9 +294,16 @@
 				border-bottom: 8rpx solid transparent;
 
 				&.active {
+					display: flex;
+					justify-content: center;
+					align-items: center;
+					padding: 4px 20px;
+					border: 1px solid #f3f3f3;
+					border-radius: 20px;
 					color: $base-color;
-					border-bottom: 6rpx solid $base-color;
 					font-weight: 700;
+					line-height: 1;
+					box-shadow: inset 2px 2px 4px #babecc, inset -2px -2px 4px #e4e4e4
 				}
 			}
 		}
@@ -288,6 +325,21 @@
 
 			>.follow__content__author {
 				flex: 1;
+
+				.aass {
+					margin: 60rpx 20rpx;
+					box-sizing: border-box;
+					background-color: #f0f0f0;
+					border-radius: 16rpx;
+					box-shadow: 10rpx 14rpx 20rpx rgba(0, 0, 0, 0.2), -16rpx -10rpx 16rpx #ffffff;
+
+					&.el-hover {
+						box-shadow: 0 0 0 rgba(0, 0, 0, 0.2),
+							0 0 0 rgba(255, 255, 255, 0.2),
+							inset 10px 10px 10px rgba(0, 0, 0, 0.1),
+							inset -10px -10px 10px rgba(255, 255, 255, 1) !important;
+					}
+				}
 
 				.news-list__scroll {
 					height: 100%;
@@ -315,5 +367,6 @@
 			letter-spacing: 3rpx;
 
 		}
+
 	}
 </style>

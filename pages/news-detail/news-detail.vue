@@ -47,9 +47,9 @@
 				<uni-icons type="compose" size="16" color="#f07373"></uni-icons>
 			</view>
 			<view class="detail__control__icons">
-				<view class="detail__control__icons-box">
+				<!-- <view class="detail__control__icons-box">
 					<uni-icons type="chat" size="22" color="#f07373"></uni-icons>
-				</view>
+				</view> -->
 				<view class="detail__control__icons-box" @click="addToLike(article._id)">
 					<uni-icons :type="article.is_like ? 'heart-filled' : 'heart'" size="22" color="#f07373"></uni-icons>
 				</view>
@@ -70,18 +70,14 @@
 				<view class="popup-content">
 					<textarea class="popup-textarea" :style="{height:`${height}rpx`}" v-model="popupValue" :placeholder="replyTo?`回复 ${replyTo}:`:'请输入评论' " fixed maxlength="200" />
 					<!-- 占位 -->
-					<view :style="{height: `${400 - height}rpx` }"></view>
+					<view :style="{height: `${500 - height}rpx` }"></view>
 				</view>
-					<view class="popup-content_other">
-						<view class="popup-emoji" :class="{'emoji-active':emojiDataInited}" @click="emojiHandle">表情</view>
-						<view class="popup-count">{{popupValue.length}}/200</view>
-					</view>
-					
-				<swiper class="slider" v-if="emojiDataInited" :indicator-dots="true" :current="0" >
-					<swiper-item v-for="(item, key) in emojiData" :key="key" class="slider-emoji" :class="[key==emojiData.length-1?'lastbox':'']">
-						<text v-for="(emoji, index) in item" :key="index" @click="selemoji(emoji)" class="slider-emoji-icon ">{{ emoji }} </text>
-					</swiper-item>
-				</swiper>
+				<view class="popup-content_other">
+					<view class="popup-emoji" :class="{'emoji-active':textarea.height != 500}" @click="emojiHandle">表情</view>
+					<view class="popup-count">{{popupValue.length}}/200</view>
+				</view>
+				<emoji class="teartextEmoji" ref="emoji" @selectEmoji="emoji"></emoji>
+				
 			</view>
 			
 		</uni-popup>
@@ -90,7 +86,6 @@
 </template>
 
 <script>
-	import emoji from "@/js_sdk/m-emoji/emoji"
 	import uParse from "@/components/gaoyia-parse/parse.vue"
 	import { mapGetters } from "vuex"
 	export default {
@@ -112,11 +107,11 @@
 				replyProps:{} ,
 				replyTo:'',
 				textarea:{
-					height: 400
+					height: 500
 				},
 				isPass : false, //敏感词检测
-				emojiData:[], //表情包数组
-				emojiDataInited :false,
+				// emojiData:[], //表情包数组
+				// emojiDataInited :false,
 				commentsPage: 1,
 				commentsPageSize:5,
 				isBottom: false, //下拉加载触发两次解决
@@ -143,7 +138,11 @@
 			 * 文章/用户相关操作
 			 * */ 
 			// 关注作者
-			followAuthor(authorId){
+			async followAuthor(authorId){
+				if(!this.GET_USER_INFO._id){
+					await this.isULogin()
+					if(!this.GET_USER_INFO._id) return
+				}
 				uni.showLoading();
 				this.$api.updateAuthorLikes({
 					authorId,
@@ -161,7 +160,11 @@
 				})
 			},
 			// 文章点赞 -> 点赞为单项事件，不可逆
-			addToThumbs(articleId){
+			async addToThumbs(articleId){
+				if(!this.GET_USER_INFO._id){
+					await this.isULogin()
+					if(!this.GET_USER_INFO._id) return
+				}
 				uni.showLoading()
 				this.$api.updateArticleThumbs({
 					articleId,
@@ -178,7 +181,11 @@
 				})
 			},
 			// 文章收藏
-			addToLike(articleId){
+			async addToLike(articleId){
+				if(!this.GET_USER_INFO._id){
+					await this.isULogin()
+					if(!this.GET_USER_INFO._id) return
+				}
 				uni.showLoading()
 				this.$api.updateArticleLikes({
 					articleId,
@@ -200,7 +207,11 @@
 			/**
 			 *	comment 相关 
 			 **/ 
-			openComment(){
+			async openComment(){
+				if(!this.GET_USER_INFO._id){
+					await this.isULogin()
+					if(!this.GET_USER_INFO._id) return
+				}
 				this.$refs.popup.open()
 			},
 			closeComment(){
@@ -209,6 +220,10 @@
 			},
 			// 发布评论
 			async publishComment(){
+				if(!this.GET_USER_INFO._id){
+					await this.isULogin()
+					if(!this.GET_USER_INFO._id) return
+				}
 				if(!this.popupValue) {
 					uni.showToast({
 						title:"请输入评论内容",
@@ -233,7 +248,7 @@
 					this.updateComment({content:this.popupValue,...this.replyProps})
 				// }).catch(err=>console.error(err))
 			},
-			 updateComment(arg){
+			updateComment(arg){
 				const data = {
 					articleId: this.article._id,
 					userId:this.GET_USER_INFO._id,
@@ -316,43 +331,32 @@
 				 this.replyTo = ''
 			 },
 			 
-			/**
-			 * 表情包相关
-			 * */
-			selemoji(m) {
-				this.popupValue += m
-			},
+			// /**
+			//  * 表情包相关
+			//  * */
 			openEmoji(){
-				this.emojiDataInited= true
+				this.$refs['emoji'].openEmoji()
 				this.textarea.height =112
 			},
 			closeEmoji(){
-				this.emojiDataInited= false
-				this.textarea.height =400
+				this.$refs['emoji'].closeEmoji()
+				this.textarea.height =500
 			},
 			emojiHandle(){
-				if(!this.emojiDataInited){
+				if(!this.textarea.height != 500){
 					return this.openEmoji()
 				}
 				this.closeEmoji()
 			},
-			InitEmoji(emoji){
-				let page = Math.ceil(emoji.length/42);
-				for (let i = 0; i < page; i++) {
-					this.emojiData[i] = [];
-					for (let k = 0; k < 42; k++) {
-						emoji[i*42+k]?this.emojiData[i].push(
-						emoji[i*42+k]
-						):''
-					}
-				}
+			async isULogin(flag) {
+				await this.$api.isULogin({ $store: this.$store, currentUrl: this.$mp.page.route })
 			}
 		},
 		async onLoad(optios) {
 			this.article =  this.formatParma(optios.params)
 			this.getDetail()
 			
-			this.InitEmoji(emoji)
+			// this.InitEmoji(emoji)
 			this.getArticleComments()
 			
 			
@@ -533,19 +537,20 @@
 			}
 			.popup-textarea{
 				width: 100%;
-				height: 400rpx;
+				height: 500rpx;
 			}
 			>.popup-content_other{
 					display: flex;
 					flex-direction: row;
 					justify-content: space-between;
+					padding-bottom: 20rpx;
 					>.popup-emoji{
-					display: flex;
-					justify-content: flex-start;
-					padding: 0 10rpx;
-					font-size: 24rpx;
-					border: 1rpx solid #FFFFFF;
-					color: #999999;	
+						display: flex;
+						justify-content: flex-start;
+						padding: 0 10rpx;
+						font-size: 24rpx;
+						border: 1rpx solid #FFFFFF;
+						color: #999999;	
 						&.emoji-active{
 							border-radius: 10rpx;
 							color: #a85050;
@@ -554,6 +559,7 @@
 							transition: all .3s ease-in-out;
 							z-index: 10;
 						}
+					}
 				}
 			>.popup-count{
 				display: flex;
@@ -561,36 +567,40 @@
 				padding-bottom: 10rpx;
 				font-size: 24rpx;
 				color: #999999;
-			}
+			
 			}
 			
 		}
 	
 	}
-
-.slider {
-	box-sizing: border-box;
-    width: 100%;
-    height: 288rpx;
+.teartextEmoji{
 	position: absolute;
-	bottom: 0;
+	bottom: 40rpx;
 	left: 0;
-    &-emoji {
-		box-sizing: border-box;
-        width: 100%;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content:center;
-        &-icon {
-			box-sizing: border-box;
-            width: 53%;
-            text-align: center;
-            padding: 10.5rpx 4rpx;
-			font-size: 44rpx;
-        }
-    }
-	
 }
+// .slider {
+// 	box-sizing: border-box;
+//     width: 100%;
+//     height: 288rpx;
+// 	position: absolute;
+// 	bottom: 0;
+// 	left: 0;
+//     &-emoji {
+// 		box-sizing: border-box;
+//         width: 100%;
+//         flex-direction: row;
+//         flex-wrap: wrap;
+//         justify-content:center;
+//         &-icon {
+// 			box-sizing: border-box;
+//             width: 53%;
+//             text-align: center;
+//             padding: 10.5rpx 4rpx;
+// 			font-size: 44rpx;
+//         }
+//     }
+	
+// }
 .lastbox{
     justify-content: flex-start;
 }
