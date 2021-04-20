@@ -23,7 +23,7 @@
 					</view>
 					<view class="form-field">
 						<text class="form-field__title">密码</text>
-						<input-box ref="loginPassword" v-model="login.psw" key="loginpassword" type="password" :verification="['isNull','code']" :verificationTip="['密码不能为空','密码由数字、字母和英文标点符号中至少两种组成，且长度在6-16位']" maTop="15" maBtm="15"></input-box>
+						<input-box ref="loginPassword" v-model="login.psw" key="loginpassword" type="password" :verification="['isNull','isPassword']" :verificationTip="['密码不能为空','密码由数字、字母和英文标点符号中至少两种组成，且长度在6-16位']" maTop="15" maBtm="15"></input-box>
 					</view>
 					<view class="form-field btn-control">
 						<button class="submit_btn" hover-class="el-hover" hover-stay-time="100" hover-start-time="0" size='mini' @click="loginSubmit">登录</button>
@@ -153,7 +153,6 @@
 				if (!this.jiaoyan()) return;
 				let captcha1 = new TencentCaptcha('', async (res) => {
 					if (res.ret === 0) {
-
 						await this.$store.dispatch('h5').then(res => {
 							res.h5Login({
 								login: this.login,
@@ -163,7 +162,7 @@
 						})
 					}
 				})
-
+				captcha1.show();
 			},
 			async singupSubmit() {
 				if (!this.jiaoyan()) return

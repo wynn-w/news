@@ -3,8 +3,7 @@
 		<view class="comment-wrapper__header">
 
 			<view class="comment-wrapper__header-avatar">
-				<!-- <image :src="comment.avatar" mode="aspectFill"></image> -->
-				<image src="@/static/logo.png" mode="aspectFill"></image>
+				<image :src="comment.author.avatar" mode="aspectFill"></image>
 			</view>
 			<view class="comment-wrapper__header-info">
 
@@ -61,11 +60,6 @@
 				default: false
 			}
 		},
-		// watch:{
-		// 	comment(newvalue){
-		// 	console.log(newvalue)
-		// 	}
-		// },
 		filters: {
 			timeFomat(value) {
 				return parseTime(value)
