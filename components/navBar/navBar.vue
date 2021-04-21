@@ -10,12 +10,11 @@
 				</view>
 				<view v-if="isSearch" class="news-navbar__search">
 					<view class="news-navbar__search__icon">
-						<uni-icons type="search" size="16" color="#555666"></uni-icons>
+						<uni-icons type="search" size="16" color="#666"></uni-icons>
 					</view>
 					<view class="news-navbar__search__text">
 
-						<input class="news-navbar__search__text" type="text" :value="value" @input="input"
-						       placeholder="搜索" @confirm="submit" @focus="focus"/>
+						<input class="news-navbar__search__text" type="text" :value="value" @input="input" placeholder="搜索" @confirm="submit" @focus="focus" />
 					</view>
 					<view class="news-navbar__search__icon" @click="clear" ref="clearIcon" :style="{display: iconbox}">
 						<uni-icons type="clear" size="16" color="#a0a3bf"></uni-icons>
@@ -24,7 +23,7 @@
 				<!-- 首页 -->
 				<view v-else class="news-navbar__search" :style="{height:`${searchInfo.height}px`}">
 					<view class="news-navbar__search__icon">
-						<uni-icons type="search" size="16" color="#555666"></uni-icons>
+						<uni-icons type="search" size="16" color="#666"></uni-icons>
 					</view>
 					<view class="news-navbar__search__text">
 						点击搜索
@@ -90,7 +89,7 @@
 			},
 			navBack() {
 				uni.switchTab({
-					url:'/pages/tabBar/home/home'
+					url: '/pages/tabBar/home/home'
 				})
 				this.$emit('navBack')
 			},
@@ -100,7 +99,7 @@
 			submit(e) {
 				this.$emit('comfirm', { value: e.detail.value })
 			},
-			focus(){
+			focus() {
 				this.$emit('inputFocus')
 			},
 			clear() {
@@ -141,10 +140,14 @@
 					justify-content: flex-start;
 					width: 100%;
 					box-sizing: border-box;
-					border-radius: 30px;
-					border: 1px solid #d89595;
-					color: #555666;
+					border-radius: 60rpx;
+					border: 1rpx solid #d89595;
+					color: #888;
 					background-color: #f9e6e6;
+					box-shadow: -2rpx -2rpx 8rpx #f0d6d0,
+						6rpx 8rpx 10rpx #c5948f,
+						inset 32rpx 18rpx 6rpx #e6e3e369,
+						inset -3rpx -3rpx 16rpx #fcfcfc;
 
 					>.news-navbar__search__icon {
 						margin: 0 8rpx 0 22rpx;
@@ -187,7 +190,7 @@
 							>input {
 								width: 100%;
 								font-size: 26rpx;
-								color: #555666;
+								color: #666;
 
 							}
 						}

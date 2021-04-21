@@ -26,6 +26,7 @@
 					<text>{{item.title}}</text>
 				</view>
 				<view class="news-list-item__image-box" v-if="item.cover[0]">
+
 					<!-- <image class="news-list-item__image-box_img" src="../../static/logo.png" mode="aspectFill"></image> -->
 					<image class="news-list-item__image-box_img" :src="`https://images.weserv.nl/?url=${item.cover[0]}`" mode="aspectFill"></image>
 				</view>
@@ -47,7 +48,7 @@
 				</view>
 				<view class="news-list-item__image-box" v-if="item.cover[0]">
 					<!-- <image v-for="i in 3" :key="i" class="news-list-item__image-box_img" src="../../static/logo.png" mode="aspectFill"></image> -->
-					<image v-if="index < 3" v-for="(item,index) in item.cover" :key="item" class="news-list-item__image-box_img" :src="`https://images.weserv.nl/?url=${item.cover}`" mode="aspectFill"></image>
+					<image v-if="index < 3" v-for="(item,index) in item.cover" :key="item" class="news-list-item__image-box_img" :src="`https://images.weserv.nl/?url=${item}`" mode="aspectFill"></image>
 				</view>
 				<view class="news-list-item__content__other">
 					<view class="news-list-item__content__other__label">
@@ -71,9 +72,9 @@
 				type: Object,
 				required: true
 			},
-			isSelf:{
+			isSelf: {
 				type: Boolean,
-				default:false
+				default: false
 			}
 		},
 		methods: {
@@ -100,7 +101,7 @@
 				})
 			},
 			emitLongpress() {
-				if(isSelf) return 
+				if (!this.isSelf) return
 				uni.$emit('deleteActicleLike', this.item._id)
 			}
 		}
@@ -124,8 +125,8 @@
 			margin-bottom: .4rem;
 
 			>.news-list-item__image-box {
-				width: 7rem;
-				height: 7rem;
+				width: 6rem;
+				height: 6rem;
 				overflow: hidden;
 				margin: 0 10rpx;
 
@@ -202,7 +203,7 @@
 
 				>.news-list-item__image-box {
 					width: 100%;
-					height: 7rem;
+					height: 6rem;
 
 					>.news-list-item__image-box_img {
 						width: 100%;
@@ -238,7 +239,7 @@
 
 				>.news-list-item__image-box {
 					width: 100%;
-					height: 7rem;
+					height: 6rem;
 					display: flex;
 					flex-direction: row;
 					justify-content: space-around;

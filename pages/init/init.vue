@@ -29,10 +29,15 @@
 		},
 		created() {
 			const res = uni.getSystemInfoSync();
-			if(res.windowWidth >  400){
-				this.isMobile = false
-				return 
+			// H5 
+			if(!res.model && res.platform != "devtools"){
+				// 宽屏
+				if(res.windowWidth >  400){
+					this.isMobile = false
+					return 
+				}
 			}
+			
 			uni.reLaunch({
 				url:'/pages/tabBar/home/home'
 			})
@@ -130,7 +135,7 @@
 		
 		text {
 			margin-top: 20rpx;
-			font-size: 28rpx;
+			font-size: 24rpx;
 			font-weight: 700;
 		}
 	}

@@ -1,7 +1,7 @@
 <template>
 	<!-- #ifdef MP -->
-	<scroll-view scroll-y class="news-list__scroll" :style="{height:`${scrollHeight - 10 }px`}" :refresher-enabled="refresherEnabble" :refresher-triggered="trigger" @refresherrefresh="refresher"
-	             @scrolltolower="loadMore">
+	<scroll-view scroll-y class="news-list__scroll" :style="{height:`${scrollHeight - 10 }px`}" :refresher-enabled="refresherEnabble" :refresher-triggered="trigger" refresher-background="#efeeee"
+	             @refresherrefresh="refresher" @scrolltolower="loadMore">
 
 		<uni-load-more v-if="listCom.length === 0" iconType="snow" status="loading"></uni-load-more>
 		<view v-for="(item, index) in listCom" :key="index">
@@ -13,7 +13,7 @@
 	<!-- #endif  -->
 
 	<!-- #ifdef H5 -->
-	<scroll-view scroll-y class="news-list__scroll" :style="{height:`100%`}" :refresher-enabled="refresherEnabble" :refresher-triggered="trigger" @refresherrefresh="refresher" @scrolltolower="loadMore">
+	<scroll-view scroll-y class="news-list__scroll" :style="{height:`100%`}" :refresher-enabled="refresherEnabble" :refresher-triggered="trigger" @refresherrefresh="refresher" refresher-background="#efeeee" @scrolltolower="loadMore">
 		<uni-load-more v-if="listCom.length === 0" iconType="snow" status="loading"></uni-load-more>
 		<view v-for="(item, index) in listCom" :key="index">
 			<list-item :item="item"> </list-item>

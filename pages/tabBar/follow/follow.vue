@@ -12,7 +12,7 @@
 		<!-- 主体 -->
 		<view class="follow__content">
 			<view class="follow__content__article" :style="{height:height}" v-if="choose === 0">
-				<uni-load-more v-if="acticleLiks.length === 0 " iconType="snow" :status="load[choose].loading"></uni-load-more>
+				<uni-load-more v-if="GET_USER_INFO._id && acticleLiks.length === 0 " iconType="snow" :status="load[choose].loading"></uni-load-more>
 				<list-scroll :list="acticleLiks" @loadMore="loadMore" :load="load" :pageSize="load[choose].pageSize" :current="choose"></list-scroll>
 			</view>
 			<view class="follow__content__author" v-else :style="{height:height}">
