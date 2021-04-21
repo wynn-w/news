@@ -1,54 +1,103 @@
 <template>
 	<view class="news-tab">
-		<scroll-view class="news-tab__srcoll" scroll-x>
+		<scroll-view class="news-tab__srcoll" scroll-x :scroll-left="scrollLeft" scroll-with-animation="true">
 			<view class="news-tab__srcoll-box">
-				<view v-for=" (item,index) in list" :key="index" 
-				@click="clickItem(item,index)" 
-				class="news-tab__srcoll__item"
-				:class="{active: activeIndex === index}"
-				>{{item.name}}</view>
+				<view v-for=" (item,index) in list" :key="index" @click="clickItem(item,index)" :id="`item-${index}`" class="news-tab__srcoll__item" :class="{active: activeIndex === index}">{{item.name}}</view>
 			</view>
 		</scroll-view>
-		<view class="news-tab__icon">
-			<uni-icons type="gear" size="26" color="#8f8f94"></uni-icons>
-		</view>
 	</view>
 </template>
 
 <script>
 	export default {
+		name: 'tab',
 		props: {
 			list: Array,
-			tabIndex:{
-				type: [Number,String],
-				default:0
+			tabIndex: {
+				type: [Number, String],
+				default: 0
 			}
 		},
-		watch:{
-			tabIndex(newValue){
+		watch: {
+			tabIndex(newValue) {
 				this.activeIndex = newValue
 			}
 		},
-		data(){
-			return{
-				activeIndex : 0
+		data() {
+			return {
+				activeIndex: 0,
+				scrollLeft: 0, // scroll-view 偏移距离
+				screenWidth: 0, // 视口的1/2
+				widthList: [], // 所有 item 的宽度
+				scrollList: [] // item 距离文档左部的距离
 			}
 		},
-		methods:{
-			clickItem(item,index){
+		methods: {
+			clickItem(item, index) {
+
 				this.activeIndex = index
-				this.$emit("update:selected",{data:item,index})
-			}
+				this.$emit("update:selected", { data: item, index })
+				let widthCopy = this.widthList;
+				let scrollWidth = this.scrollList[index]; //距离文档左部的距离
+				const currentWidth = widthCopy[index];
+				// scrollView 居中算法
+				// 减去固定宽度位移
+				// 减去选中的bar的宽度的一半
+				// console.log(scrollWidth,currentWidth);
+				scrollWidth -= this.screenWidth;
+				scrollWidth -= currentWidth / 2;
+				this.scrollLeft = scrollWidth;
+
+			},
+			calculateWindowWidth() {
+				let info = uni.getSystemInfoSync();
+				this.screenWidth = info.screenWidth / 2;
+			},
+			// 获取所有 item 宽度
+			calculateItemWidth() {
+				let arr1 = [];
+				let arr2 = [];
+				let lastWidth = 0
+				const LENGTH = this.list.length
+				for (let i = 0; i < LENGTH; i++) {
+					let view = uni.createSelectorQuery().in(this).select(`#item-${i}`);
+					view.fields({
+						size: true
+					}, data => {
+						const width = data.width
+						lastWidth += width
+						if (i === 0) {
+							arr1.push(0);
+						} else {
+							arr1.push(lastWidth);
+						}
+						arr2.push(data.width)
+					}).exec()
+					this.widthList = Object.assign([], this.widthList, arr2)
+					this.scrollList = Object.assign([], this.scrollList, arr1)
+				}
+			},
+		},
+		mounted() {
+			this.calculateWindowWidth()
+			setTimeout(() => {
+				this.calculateItemWidth() //真就mounted也取不到
+			}, 1000)
 		}
 	}
 </script>
 
 <style lang="scss">
+	page {
+		// overflow: -moz-hidden-unscrollable;
+
+	}
+
 	.news-tab {
 		display: flex;
 		flex-direction: row;
 		width: 100%;
-		background-color: #FFFFFF;
+		background-color: #efeeee;
 		box-sizing: border-box;
 
 		>.news-tab__srcoll {
@@ -56,7 +105,11 @@
 			flex: 1;
 			overflow: hidden;
 			box-sizing: border-box;
-			height: 100%;
+			// overflow: -moz-hidden-unscrollable;
+			// scrollbar-width: none;
+			// height: calc(100% + 36rpx);
+			width: 100%;
+			overflow: auto;
 
 			.news-tab__srcoll-box {
 				display: flex;
@@ -65,18 +118,21 @@
 				flex-wrap: nowrap;
 				align-items: center;
 				box-sizing: border-box;
-				height: 45px;
+				height: 90rpx;
+				
+
 
 				.news-tab__srcoll__item {
-					display: flex;
-					padding: 0px 14px;
-					font-size: 14px;
+					display: inline-flex;
+					padding: 0 28rpx;
+					font-size: 28rpx;
 					color: #8f8f94;
 					flex-shrink: 0;
 					box-sizing: border-box;
-					&.active{
+
+					&.active {
 						color: $base-color;
-						transition: all 0.3s ease;
+						transition: all 0.5s ease;
 					}
 				}
 			}
@@ -88,17 +144,39 @@
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			padding: 0 8px;
+			padding: 0 16rpx;
 
 			&::after {
 				position: absolute;
-				top: 12px;
+				top: 24rpx;
 				left: 0;
-				bottom: 12px;
+				bottom: 24rpx;
 				left: 0px;
 				content: "";
-				width: 1px;
+				width: 2rpx;
 				background-color: #c4c4ca;
+			}
+		}
+
+		/**
+		 * 隐藏滚动条
+		 */
+		// chrome
+		.news-tab__srcoll ::-webkit-scrollbar {
+			display: none
+		}
+
+		// ie/edge
+		.news-tab__srcoll {
+			-ms-overflow-style: none;
+		}
+		// firefox ==> 无法跳动
+		.news-tab__srcoll{
+			overflow: hidden;
+			.news-tab__srcoll-box{
+				margin-bottom: -16px;
+				 overflow-x: scroll;
+				 overflow-y: hidden;
 			}
 		}
 	}
