@@ -3,7 +3,7 @@
 		<swiper class="news-list__swiper" @change="change" :current="currentCopy">
 			<swiper-item v-for="(item,index) in tabList" :key="index" class="news-list__swiper-wrapper">
 				<!-- #ifdef MP -->
-				<list-scroll refresherEnabble :list="list[currentCopy]" :current="currentCopy" :load="load"
+				<list-scroll  refresherEnabble :list="list[currentCopy]" :current="currentCopy" :load="load"
 				             :pageSize="pageSize" @loadMore="loadMore" @refresher="refresher" :scrollHeight="scrollHeight"></list-scroll>
 				<!-- #endif  -->
 				<!-- #ifdef H5 -->
@@ -74,7 +74,6 @@
 			// 下拉刷新
 			refresher() {
 				const index = this.currentCopy
-				// 小程序没有 refs，但 $children 方便; H5 用 $ref 方便
 				// #ifdef MP
 				const target = this.$children[index]
 				// #endif
@@ -84,7 +83,7 @@
 				this.$store.dispatch('asyncArticle', {
 					name: this.tabList[index].name,
 					index: index,
-					page: 1,
+					page: 2,
 					pageSize: this.pageSize,
 					isRefresh: true //仅在刷新去情况下传递，默认 false
 				}).then(res => {
@@ -130,11 +129,7 @@
 				box-sizing: border-box;
 				positon: fixed;
 
-				.news-list__scroll {
-					display: flex;
-					flex-direction: column;
-					height: 100% !important;
-				}
+				
 			}
 		}
 

@@ -1,8 +1,9 @@
 <template>
 	<!-- #ifdef MP -->
-	<scroll-view scroll-y class="news-list__scroll" :style="{height:`${scrollHeight - 10 }px`}"
-	             :refresher-enabled="refresherEnabble" :refresher-triggered="trigger"
-	             @refresherrefresh="refresher" @scrolltolower="loadMore">
+	<scroll-view scroll-y class="news-list__scroll" :style="{height:`${scrollHeight - 10 }px`}" :refresher-enabled="refresherEnabble" :refresher-triggered="trigger" @refresherrefresh="refresher"
+	             @scrolltolower="loadMore">
+
+		<uni-load-more v-if="listCom.length === 0" iconType="snow" status="loading"></uni-load-more>
 		<view v-for="(item, index) in listCom" :key="index">
 			<list-item :item="item"> </list-item>
 		</view>
@@ -12,12 +13,13 @@
 	<!-- #endif  -->
 
 	<!-- #ifdef H5 -->
-	<scroll-view scroll-y class="news-list__scroll" :style="{height:`100%`}" :refresher-enabled="refresherEnabble"
-	             :refresher-triggered="trigger" @refresherrefresh="refresher" @scrolltolower="loadMore">
+	<scroll-view scroll-y class="news-list__scroll" :style="{height:`100%`}" :refresher-enabled="refresherEnabble" :refresher-triggered="trigger" @refresherrefresh="refresher" @scrolltolower="loadMore">
+		<uni-load-more v-if="listCom.length === 0" iconType="snow" status="loading"></uni-load-more>
 		<view v-for="(item, index) in listCom" :key="index">
 			<list-item :item="item"> </list-item>
 		</view>
 		<uni-load-more v-if="listCom && listCom.length  > (pageSize -1)" iconType="snow" :status="load[current].loading"></uni-load-more>
+		<view v-else style="width: 100%; height: 20rpx;"></view>
 		<xuan-popup ref="mpopup" :isdistance="true"></xuan-popup>
 	</scroll-view>
 
@@ -30,8 +32,8 @@
 		name: "news-list-scroll",
 		props: {
 			list: {
-				type:Array,
-				default(){
+				type: Array,
+				default () {
 					return [];
 				},
 			},
@@ -59,7 +61,7 @@
 			listCom() {
 				return this.list
 			},
-			
+
 		},
 		data() {
 			return {
@@ -101,10 +103,14 @@
 				});
 			}
 
-		},
+		}
 	}
 </script>
 
 <style lang="scss">
-
+	.news-list__scroll {
+		display: flex;
+		flex-direction: column;
+		height: 100% !important;
+	}
 </style>

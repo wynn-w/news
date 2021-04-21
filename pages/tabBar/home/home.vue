@@ -42,7 +42,7 @@
 				const name = '全部'
 				this.isLoadInit()
 				this.$store.dispatch('asyncLabel')
-				this.dispatch_asyncArticle({ name, page: 1, pageSize: this.pageSize })
+				this.dispatch_asyncArticle({ name, page: 1, pageSize: this.pageSize,index:0 })
 			},
 			// 滑动 list 组件触发
 			listCurrent(res) {
@@ -97,6 +97,7 @@
 	page {
 		height: 100%;
 		width: 100%;
+		background-color: #efeeee;
 	}
 
 	.news-page-home {
