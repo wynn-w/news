@@ -1,11 +1,22 @@
 {
 	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		// #ifndef MP 
+		{
+			"path": "pages/init/init",
+			"style": {
+				"navigationStyle": "custom", //开启自定义导航栏  =>原因是 H5 页面本身没有小程序那样的顶部导航栏者一块，自定实现一个保持一致
+				"navigationBarBackgroundColor": "#efeeee",
+				"navigationBarTitleText": ""
+			}
+		},
+		//#endif
 		{
 			"path": "pages/tabBar/user/user",
 			"style": {
 				// #ifdef H5
 				"navigationStyle": "custom", //开启自定义导航栏  =>原因是 H5 页面本身没有小程序那样的顶部导航栏者一块，自定实现一个保持一致
 				// #endif
+				"navigationBarBackgroundColor": "#efeeee",
 				"navigationBarTitleText": ""
 			}
 		}, {
@@ -23,7 +34,7 @@
 				"navigationStyle": "custom", //开启自定义导航栏  =>原因是 H5 页面本身没有小程序那样的顶部导航栏者一块，自定实现一个保持一致
 				// #endif
 				"navigationBarTitleText": "",
-				"navigationBarBackgroundColor": "#f07373",
+				"navigationBarBackgroundColor": "#efeeee",
 				"enablePullDownRefresh": false
 			}
 
@@ -56,11 +67,36 @@
 		}, {
 			"path": "pages/feedback/feedback",
 			"style": {
+				// #ifdef H5
+				"navigationStyle": "custom", //开启自定义导航栏  =>原因是 H5 页面本身没有小程序那样的顶部导航栏者一块，自定实现一个保持一致
+				// #endif
 				"navigationBarTitleText": "",
 				"enablePullDownRefresh": false
 			}
 
 		}
+
+		, {
+			"path": "pages/login-page/login-page",
+			"style": {
+				// #ifdef H5
+				"navigationStyle": "custom", //开启自定义导航栏  =>原因是 H5 页面本身没有小程序那样的顶部导航栏者一块，自定实现一个保持一致
+				// #endif
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false
+			}
+
+		}, {
+			"path": "pages/forget-password/forget-password",
+			"style": { // #ifdef H5
+				"navigationStyle": "custom", //开启自定义导航栏  =>原因是 H5 页面本身没有小程序那样的顶部导航栏者一块，自定实现一个保持一致
+				// #endif
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false
+			}
+
+		}
+
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
@@ -74,18 +110,18 @@
 		"backgroundColor": "#FFFFFF",
 		"list": [{
 				"pagePath": "pages/tabBar/home/home",
-				"iconPath": "static/logo.png",
-				"selectedIconPath": "./static/logo.png",
+				"iconPath": "static/tabBar/home.png",
+				"selectedIconPath": "./static/tabBar/home-c.png",
 				"text": "首页"
 			}, {
 				"pagePath": "pages/tabBar/follow/follow",
-				"iconPath": "static/logo.png",
-				"selectedIconPath": "./static/logo.png",
+				"iconPath": "static/tabBar/focus.png",
+				"selectedIconPath": "./static/tabBar/focus-c.png",
 				"text": "关注"
 			}, {
 				"pagePath": "pages/tabBar/user/user",
-				"iconPath": "static/logo.png",
-				"selectedIconPath": "./static/logo.png",
+				"iconPath": "static/tabBar/user.png",
+				"selectedIconPath": "./static/tabBar/user-c.png",
 				"text": "我的"
 			}
 
