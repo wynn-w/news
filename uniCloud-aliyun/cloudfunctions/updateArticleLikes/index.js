@@ -5,10 +5,15 @@ const dbCmd = db.command
 
 exports.main = async (event, context) => {
 	const {
-		userId='60649c806e0c9a0001f9b995',
+		userId,
 		articleId
 	} = event
-
+	if (!userId ||!articleId) {
+		return {
+			code: 401,
+			msg: '非法操作'
+		}
+	}
 	const userinfo = await db.collection('user').doc(userId).get()
 	const articleIdIds = userinfo.data[0].article_likes_ids
 	let dbCmdFuns = null

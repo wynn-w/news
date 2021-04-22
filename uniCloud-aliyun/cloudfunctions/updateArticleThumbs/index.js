@@ -4,10 +4,15 @@ const db=uniCloud.database();
 const dbCmd=db.command;
 exports.main = async (event, context) => {
 	const {
-		userId = '60649c806e0c9a0001f9b995',
+		userId ,
 		articleId
 	} = event;
-	
+	if(!userId ||!articleId){
+			return {
+				code:401,
+				msg:'非法操作'
+			}
+		}
 	const user =await db.collection('user').doc(userId).get();
 	const thumbsUpArticleIds = user.data[0].thumbs_up_article_ids;
 	

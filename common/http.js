@@ -1,5 +1,5 @@
 // 云函数调用封装
-export default function $htttp(options){
+export default function $http(options){
 	const {url,data} = options
 	return new Promise((reslove,reject)=>{
 		uniCloud.callFunction({

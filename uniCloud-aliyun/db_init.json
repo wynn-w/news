@@ -613,34 +613,85 @@
 					"301818",
 					"298932"
 				]
+			}, {
+				"article_ids": [],
+				"article_likes_ids": [],
+				"author_likes_ids": [],
+				"author_name": "测试专用",
+				"avatar": "",
+				"explain": "架构师成长沟通群878622640，欢迎加入~",
+				"fans_count": 0,
+				"follow_count": 0,
+				"gender": "男",
+				"id": "5465466",
+				"integral_count": "",
+				"professional": "测试",
+				"status": "normal",
+				"thumbs_up_article_ids": []
+			},
+			{
+				"author": {
+					"author_name": "Java架构师讲师团",
+					"avatar": "//img1.sycdn.imooc.com/5dafce1a00013fd5014...",
+					"browse_count": 173
+				},
+				"classify": "后端开发",
+				"collection_count": 5,
+				"comments_count": 0,
+				"content": "测试文章 --内容",
+				"cover": [],
+				"create_time": "2021.03.29 21:50",
+				"id": "301324aasd1",
+				"mode": "column",
+				"thumbs_up_count": 5,
+				"title": "测试专用文章",
+				"comments": []
+			},
+			{
+				"author": {
+					"author_name": "Java架构师讲师团",
+					"avatar": "//img1.sycdn.imooc.com/5dafce1a00013fd5014...",
+					"browse_count": 173
+				},
+				"classify": "后端开发",
+				"collection_count": 5,
+				"comments_count": 0,
+				"content": "测试文章 --内容",
+				"cover": [],
+				"create_time": "2021.03.29 21:50",
+				"id": "301324aasd1",
+				"mode": "column",
+				"thumbs_up_count": 5,
+				"title": "测试专用文章",
+				"comments": []
 			}
 		]
 	},
 	"label": { // 分类表
 		"data": [{
 				"name": "后端开发",
-				"user":[]
+				"user": []
 			}, {
 				"name": "职场生活",
-				"user":[]
+				"user": []
 			},
 			{
 				"name": "前端开发",
-				"user":[]
+				"user": []
 			},
 			{
 				"name": "人工智能",
-				"user":[]
+				"user": []
 			},
 			{
 				"name": "移动开发",
-				"user":[]
+				"user": []
 			},
 			{
 				"name": "其它",
-				"user":[]
+				"user": []
 			}
 		]
 	}
-	
+
 }

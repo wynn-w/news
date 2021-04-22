@@ -14,5 +14,4 @@ requireJs.keys().forEach(fileName => {
 	if(fileName === "./index.js") return 
 	Object.assign(module,requireJs(fileName))
 })
-
 export default module;

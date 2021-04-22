@@ -8,6 +8,12 @@ exports.main = async (event, context) => {
 			articleId
 	} = event
 	let list
+	if(!articleId){
+		return {
+			code:401,
+			msg:'非法操作'
+		}
+	}
 	if (userId == '') {
 		// 游客模式
 		list = await db.collection('article')

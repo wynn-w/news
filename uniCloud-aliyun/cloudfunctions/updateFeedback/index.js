@@ -2,11 +2,16 @@
 const db = uniCloud.database()
 exports.main = async (event, context) => {
 	const {
-		userId = "60649c806e0c9a0001f9b995",
-			feedbackImages = [],
-			content = ''
+		userId,
+		feedbackImages = [],
+		content
 	} = event
-
+if (!userId || !content) {
+		return {
+			code: 401,
+			msg: '非法操作'
+		}
+	}
 	await db.collection('feedback').add({
 		user_id: userId,
 		feedback_images: feedbackImages,

@@ -38,10 +38,12 @@ exports.main = async (event, context) => {
 		_id: true,
 	}).get()
 	user = user.data[0]._id
+
 	// 修改密码
 	await db.collection('userLogin').doc(user).update({
 		password: password
 	})
+
 	return {
 		code: 200,
 		msg: '密码修改成功'

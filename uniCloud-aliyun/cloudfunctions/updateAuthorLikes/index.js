@@ -5,9 +5,15 @@ const dbcmd = db.command;
 exports.main = async (event, context) => {
 
 	const {
-		userId = '60649c806e0c9a0001f9b995',
-			authorId='23a12'
+		userId,
+		authorId
 	} = event;
+	if (!userId || !authorId) {
+		return {
+			code: 401,
+			msg: '非法操作'
+		}
+	}
 	let user = await db.collection('user').doc(userId).get();
 	let authorLikesIds = user.data[0].author_likes_ids;
 	let authorIds = null
@@ -20,7 +26,7 @@ exports.main = async (event, context) => {
 		authorIds = dbcmd.addToSet(authorId);
 	}
 
-	 await db.collection('user').doc(userId).update({
+	await db.collection('user').doc(userId).update({
 		author_likes_ids: authorIds
 	})
 	// let a = await db.collection('user').doc(userId)
@@ -31,6 +37,6 @@ exports.main = async (event, context) => {
 	return {
 		code: 200,
 		msg: '关注更新成功',
-		authorLikesIds 
+		authorLikesIds
 	}
 };

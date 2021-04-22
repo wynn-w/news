@@ -14,6 +14,12 @@ exports.main = async (event, context) => {
 		replyId = '', // 评论对象为 文章评论->评论->评论
 		isReply = false, // 是否存在 文章评论->评论->评论 => 子回复
 	} = event
+	if (!userId || !articleId) {
+		return {
+			code: 401,
+			msg: '非法操作'
+		}
+	}
 	let replyArticle = async () => {
 		commentProps.replys = []
 		if (articleLength === 0) {
@@ -60,7 +66,13 @@ exports.main = async (event, context) => {
 		})
 	}
 
-	let user = await db.collection('user').doc(userId).get()
+	let user = await db.collection('user')
+		.doc(userId)
+		.field({
+			author_name: true,
+			avatar: true,
+			professional: true
+		}).get()
 	user = user.data[0] // 当前用户数据
 	// 1判断当前文章是否存在评论，2获取文章评论id 
 	let article = await db.collection('comment').aggregate()
@@ -69,7 +81,7 @@ exports.main = async (event, context) => {
 		}).end()
 	const articleLength = article.data.length
 	let commentProps = {
-		comment_id: genID(5), // 评论id
+		comment_id: genID(8), // 评论id
 		comment_content: content, // 评论内容
 		create_time: new Date().getTime(), // 创建时间
 		is_reply: isReply, // 标记，区分主回复/子回复 
@@ -85,11 +97,11 @@ exports.main = async (event, context) => {
 	// 回复对象为 文章
 	if (commentId == '') {
 		await replyArticle()
-		return
+	} else {
+		// 回复对象为 评论
+		await replyCommment()
+
 	}
-	// 回复对象为 评论
-	await replyCommment()
-	
 
 	//返回数据给客户端
 	return {

@@ -4,9 +4,14 @@ const $ = db.command.aggregate
 const dbCmd= db.command
 exports.main = async (event, context) => {
 	const {
-		userId='60649c806e0c9a0001f9b995'
+		userId
 	} = event;
-	
+	if(!userId){
+		return {
+			code:401,
+			msg:'非法操作'
+		}
+	}
 	let userInfo=await db.collection('user').doc(userId).get();
 	userInfo= userInfo.data[0]
 	
