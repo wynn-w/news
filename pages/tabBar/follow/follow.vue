@@ -13,7 +13,7 @@
 		<view class="follow__content">
 			<view class="follow__content__article" :style="{height:height}" v-if="choose === 0">
 				<uni-load-more v-if="GET_USER_INFO._id && acticleLiks.length === 0 " iconType="snow" :status="load[choose].loading"></uni-load-more>
-				<list-scroll :list="acticleLiks" @loadMore="loadMore" :load="load" :pageSize="load[choose].pageSize" :current="choose"></list-scroll>
+				<list-scroll :list="acticleLiks" @loadMore="loadMore" :topLoadMore="false" :load="load" isSelf :pageSize="load[choose].pageSize" :current="choose"></list-scroll>
 			</view>
 			<view class="follow__content__author" v-else :style="{height:height}">
 				<uni-load-more v-if="authorLiks.length === 0 " iconType="snow" :status="load[choose].loading"></uni-load-more>
@@ -74,7 +74,7 @@
 				}).then(res => {
 					if (res.code === 200) {
 						this.loadInit()
-						this.updataAuthor()
+						this.updataAuthor({delete:true})
 						uni.showToast({
 							title: '取消关注成功',
 							icon: 'none'
@@ -96,7 +96,7 @@
 							}).then(res => {
 								if (res.code === 200) {
 									this.loadInit()
-									this.updateActicle()
+									this.updateActicle({delete:true})
 									uni.showToast({
 										title: '取消收藏成功',
 										icon: 'none'
@@ -122,6 +122,9 @@
 					if (data.length === 0) {
 						let old = this.load[this.choose]
 						old.loading = "noMore"
+						if(arg && arg.delete){
+							this.authorLiks=[]
+						}
 						this.load = Object.assign({}, this.load, old)
 						return
 					}
@@ -150,6 +153,9 @@
 					if (data.length === 0) {
 						let old = this.load[this.choose]
 						old.loading = "noMore"
+						if(arg && arg.delete){
+							this.acticleLiks=[]
+						}
 						this.load = Object.assign({}, this.load, old)
 						this.$forceUpdate()
 						return
@@ -216,11 +222,9 @@
 					this.updateActicle()
 				})
 				uni.$on('updataAuthorLikes', () => {
-					// this.load[this.choose].page = 1
 					this.updataAuthor()
 				})
 				uni.$on('deleteActicleLike', (res) => {
-					// this.load[this.choose].page = 1
 					this.deleteActicleLike(res)
 				})
 			},
@@ -233,8 +237,6 @@
 			this.calcHeight()
 			this.loadInit()
 			this.eventListener()
-
-
 			this.updateActicle()
 
 		},
@@ -250,15 +252,15 @@
 						} else if (res.cancel) {
 							console.log('取消')
 						}
-						
+
 
 					}
 				})
 				// #endif
 				// #ifdef H5
-					await this.isULogin()
+				await this.isULogin()
 				// #endif
-				
+
 			}
 		}
 	}
