@@ -264,6 +264,7 @@
 			},
 			// 获取评论
 			async getArticleComments(value){
+				console.log(this.commentsPage);
 				const isUpdate = value  || false
 				await this.$api.getComments({
 					articleId: this.article._id,
@@ -282,7 +283,7 @@
 					this.isBottom = false
 					// 当前操作为评论刷新触发
 					if(isUpdate){
-						this.commentList = Object.assign({},this.commentList,data)
+						this.commentList = Object.assign([],this.commentList,data)
 						uni.showToast({
 							title:"评论成功",
 							icon:"success"
@@ -292,7 +293,7 @@
 					// 触底加载触发
 					let old = JSON.parse(JSON.stringify(this.commentList))
 					old.push(...data)
-					this.commentList=old
+					this.commentList=Object.assign([],this.commentList,old)
 				}).catch(err=>{
 					if(/^20/.test(err.code)){
 						uni.showToast({
@@ -382,6 +383,7 @@
 		},
 		onReachBottom(){
 			if(this.isBottom)return
+			console.log(2);
 			const old  = this.commentsPage
 			this.isBottom = true
 			this.commentsPage++

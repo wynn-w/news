@@ -101,8 +101,9 @@
 				})
 			},
 			emitLongpress() {
-				if (!this.isSelf) return
-				uni.$emit('deleteActicleLike', this.item._id)
+				if (!this.isSelf) {
+					uni.$emit('deleteActicleLike', this.item._id)
+				}
 			}
 		}
 	}
