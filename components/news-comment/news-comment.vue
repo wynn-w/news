@@ -1,5 +1,5 @@
 <template>
-	<view class="comment-wrapper" :class="{['isReply']:reply}">
+	<view class="comment-wrapper" :class="{['isReply']:reply}" >
 		<view class="comment-wrapper__header">
 
 			<view class="comment-wrapper__header-avatar">
@@ -25,7 +25,7 @@
 			</view>
 			<view class="comment-wrapper__reply">
 				<view class="comment-wrapper__reply-list">
-					<news-comment v-if="index < 3 || showAll" v-for="(item,index) in comment.replys" :key="item.comment_id" :comment="item" reply @reply="commentReply"></news-comment>
+					<news-comment v-if="index < 3 || showAll" v-for="(item,index) in comment.replys" :key="item.comment_id+index.toString()"  :comment="item" reply @reply="commentReply"></news-comment>
 				</view>
 				<view class="comment-wrapper__reply__showAll" v-if="comment.replys.length > 3 && !showAll" @click="showRest">
 					共{{ comment.replys.length }}条回复 >
@@ -95,16 +95,16 @@
 
 <style lang="scss">
 	.comment-wrapper {
-		margin: 15px 0;
+		margin: 30rpx 0;
 
 		.comment-wrapper__header {
 			display: flex;
 
 			.comment-wrapper__header-avatar {
 				flex-shrink: 0;
-				width: 30px;
-				height: 30px;
-				border-radius: 5px;
+				width: 60rpx;
+				height: 60rpx;
+				border-radius: 10rpx;
 				overflow: hidden;
 
 				image {
@@ -116,68 +116,61 @@
 			.comment-wrapper__header-info {
 				display: flex;
 				flex-direction: column;
-				padding: 0 15px;
-				font-size: 12px;
+				padding: 0 30rpx;
+				font-size: 24rpx;
 				color: #999;
 				line-height: 1;
 
 				.comment-wrapper__header-info__usr-name {
-					margin-bottom: 10px;
-					font-size: 14px;
+					margin-bottom: 20rpx;
+					font-size: 28rpx;
 					color: #567ec7;
 
 					.reply-text {
-						margin: 0 10px;
-						font-weight: bold;
-						color: #000;
+						margin: 0 20rpx;
+						color: #666;
 					}
 				}
 			}
 		}
 
 		.comment-wrapper__content {
-			margin-top: 10px;
-			font-size: 14px;
-			color: #000;
+			margin-top: 20rpx;
+			font-size: 28rpx;
+			color: #333;
 
 			.comment-wrapper__info {
-				margin-top: 15px;
+				margin-top: 30rpx;
 				display: flex;
 
 				.comment-wrapper__info__button {
-					padding: 2px 10px;
-					font-size: 12px;
+					padding: 4rpx 20rpx;
+					font-size: 24rpx;
 					color: #999;
-					border-radius: 20px;
-					border: 1px #ccc solid;
+					border-radius: 40rpx;
+					border: 2rpx #ccc solid;
 				}
 			}
 
 			.comment-wrapper__reply {
-				background-color: #efeeee;
 				display: flex;
 				flex-direction: column;
-				margin: 15px 0;
+				margin: 30rpx 0;
+				border-radius: 16rpx;
+				background-color: #efeeee;
 				.comment-wrapper__reply__showAll{
 					padding:0 30rpx 10rpx 30rpx;
 					color: #567ec7;
 				}
 			}
 
-			.comment-wrapper__reply:not(:first-child) {
-				// 	// margin-bottom: 0;
-				// color: red;
-				// 
-
-
-			}
 
 		}
 
 		&.isReply {
 			box-sizing: border-box;
 			margin: 0;
-			padding: 15px;
+			padding: 30rpx 30rpx 0 30rpx;
 			background-color: #efeeee;
 			width: 100%;
 

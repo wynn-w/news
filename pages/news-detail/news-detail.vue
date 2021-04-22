@@ -32,11 +32,10 @@
 			<!-- 文章评论 -->
 			<view class="detail-comment">
 				<view class="comment-title">最新评论</view>
-				<view class="comment-content" v-for="item in commentList" :key="item.comment_id">
+				<view class="comment-content" v-for="(item,index) in commentList" :key="item.comment_id+index.toString()">
 					<news-comment :comment="item" @reply="reply"></news-comment>
 				</view>
-				<uni-load-more v-if="commentList.length === 0 || commentList.length > commentsPageSize" iconType="snow" :status="loading" :contentText="contentText"></uni-load-more>
-
+				<uni-load-more v-if=" commentList.length > commentsPageSize || commentList.length === 0 " iconType="snow" :status="loading" :contentText="contentText"></uni-load-more>
 			</view>
 		</view>
 
@@ -73,7 +72,10 @@
 					<view :style="{height: `${500 - height}rpx` }"></view>
 				</view>
 				<view class="popup-content_other">
-					<view class="popup-emoji" :class="{'emoji-active':textarea.height != 500}" @click="emojiHandle">表情</view>
+					<view class="popup-emoji" :class="{'emoji-active':textarea.height != 500}" @click="emojiHandle">
+						<image v-if="textarea.height != 500" style="width: 48rpx;height: 48rpx;" src="/static/emoji-c.png" mode="aspectFill"></image>
+						<image v-else style="width: 48rpx;height: 48rpx;" src="/static/emoji.png" mode="aspectFill"></image>
+					</view>
 					<view class="popup-count">{{popupValue.length}}/200</view>
 				</view>
 				<emoji class="teartextEmoji" ref="emoji" @selectEmoji="emoji"></emoji>
@@ -118,14 +120,14 @@
 				loading:'loading', //load more组件状态
 				contentText:{contentrefresh: "正在加载...",contentnomore: "没有更多评论了"},
 				follow: false,
-				isScroll: false
+				canScroll: true
 			};
 		},
 		methods: {
 			getDetail() {
 				this.$api.getArticleDetail({
 					articleId: this.article._id,
-					// userId: //当前用户 id ，游客则为空
+					userId: this.GET_USER_INFO._id//当前用户 id ，游客则为空
 				}).then(res => {
 					const { data } = res
 					this.article = Object.assign({}, this.article, data)
@@ -216,7 +218,7 @@
 			},
 			closeComment(){
 				this.$refs.popup.close()
-				this.closeEmoji()
+				this.emojiHandle()
 			},
 			// 发布评论
 			async publishComment(){
@@ -257,10 +259,8 @@
 				this.$api.updataComment(data).then(async res=>{
 					this.$refs.popup.close()
 					await this.getArticleComments(true)
-					
-					
 					this.clearCache()
-				})
+				}).catch(err=>console.error(err))
 			},
 			// 获取评论
 			async getArticleComments(value){
@@ -272,6 +272,7 @@
 				}).then(res=>{
 					
 					const {data} = res
+					
 					if(data.length === 0){
 						this.commentsPage--
 						this.isBottom = true
@@ -292,6 +293,18 @@
 					let old = JSON.parse(JSON.stringify(this.commentList))
 					old.push(...data)
 					this.commentList=old
+				}).catch(err=>{
+					if(/^20/.test(err.code)){
+						uni.showToast({
+							title:'遇到点小问题，请刷新后重试',
+							icon:'none'
+						})
+					}else{
+						uni.showToast({
+							title:err.msg,
+							icon:'none'
+						})
+					}
 				})
 			},
 			// 回复评论
@@ -335,18 +348,21 @@
 			//  * 表情包相关
 			//  * */
 			openEmoji(){
-				this.$refs['emoji'].openEmoji()
-				this.textarea.height =112
+				this.$refs['emoji'] && this.$refs['emoji'].openEmoji()
+				this.textarea.height =212
 			},
 			closeEmoji(){
-				this.$refs['emoji'].closeEmoji()
+				this.$refs['emoji'] && this.$refs['emoji'].closeEmoji()
 				this.textarea.height =500
 			},
 			emojiHandle(){
-				if(!this.textarea.height != 500){
+				if(this.textarea.height === 500){
 					return this.openEmoji()
 				}
 				this.closeEmoji()
+			},
+			emoji(res){
+				this.popupValue += res;
 			},
 			async isULogin(flag) {
 				await this.$api.isULogin({ $store: this.$store, currentUrl: this.$mp.page.route })
@@ -356,10 +372,13 @@
 			this.article =  this.formatParma(optios.params)
 			this.getDetail()
 			
-			// this.InitEmoji(emoji)
-			this.getArticleComments()
-			
-			
+		},
+		onPageScroll(e) {
+			if(!this.canScroll) return
+			this.canScroll = false
+			this.$nextTick(()=>{
+				this.getArticleComments()
+			})
 		},
 		onReachBottom(){
 			if(this.isBottom)return
@@ -406,7 +425,7 @@
 
 			>.detail__urs-info__content {
 				width: 100%;
-				padding-left: 10px;
+				padding-left: 20rpx;
 				display: flex;
 				flex-direction: column;
 				justify-content: space-between;
@@ -549,13 +568,8 @@
 						justify-content: flex-start;
 						padding: 0 10rpx;
 						font-size: 24rpx;
-						border: 1rpx solid #FFFFFF;
 						color: #999999;	
 						&.emoji-active{
-							border-radius: 10rpx;
-							color: #a85050;
-							border: 1rpx solid  $base-color;
-							box-shadow: inset 0 0 8rpx $base-color;
 							transition: all .3s ease-in-out;
 							z-index: 10;
 						}
@@ -578,29 +592,6 @@
 	bottom: 40rpx;
 	left: 0;
 }
-// .slider {
-// 	box-sizing: border-box;
-//     width: 100%;
-//     height: 288rpx;
-// 	position: absolute;
-// 	bottom: 0;
-// 	left: 0;
-//     &-emoji {
-// 		box-sizing: border-box;
-//         width: 100%;
-//         flex-direction: row;
-//         flex-wrap: wrap;
-//         justify-content:center;
-//         &-icon {
-// 			box-sizing: border-box;
-//             width: 53%;
-//             text-align: center;
-//             padding: 10.5rpx 4rpx;
-// 			font-size: 44rpx;
-//         }
-//     }
-	
-// }
 .lastbox{
     justify-content: flex-start;
 }
