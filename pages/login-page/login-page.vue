@@ -23,7 +23,8 @@
 					</view>
 					<view class="form-field">
 						<text class="form-field__title">密码</text>
-						<input-box ref="loginPassword" v-model="login.psw" key="loginpassword" type="password" :verification="['isNull','isPassword']" :verificationTip="['密码不能为空','密码由数字、字母和英文标点符号中至少两种组成，且长度在6-16位']" maTop="15" maBtm="15"></input-box>
+						<input-box ref="loginPassword" v-model="login.psw" key="loginpassword" type="password" :verification="['isNull','isPassword']" :verificationTip="['密码不能为空','密码由数字、字母和英文标点符号中至少两种组成，且长度在6-16位']"
+						           maTop="15" maBtm="15"></input-box>
 					</view>
 					<view class="form-field btn-control">
 						<button class="submit_btn" hover-class="el-hover" hover-stay-time="100" hover-start-time="0" size='mini' @click="loginSubmit">登录</button>
@@ -74,16 +75,19 @@
 				</view>
 			</view>
 		</view>
+		<tfgg-verify  ref="verifyElement"></tfgg-verify>
 	</view>
 
 </template>
 
 <script>
 	import inputBox from '@/components/input-box/input-box';
+	import tfggVerify from "@/components/tfgg-verify/tfgg-verify.vue";
 	export default {
 		name: 'login-page',
 		components: {
-			inputBox
+			inputBox,
+			"tfgg-verify": tfggVerify
 		},
 		computed: {
 			emailId: {
@@ -151,8 +155,9 @@
 			},
 			async loginSubmit() {
 				if (!this.jiaoyan()) return;
-				let captcha1 = new TencentCaptcha('', async (res) => {
+				this.$refs.verifyElement.aaa().then(async (res) => {
 					if (res.ret === 0) {
+						uni.showLoading()
 						await this.$store.dispatch('h5').then(res => {
 							res.h5Login({
 								login: this.login,
@@ -161,12 +166,13 @@
 
 						})
 					}
-				})
-				captcha1.show();
+				}).catch(err => console.log(err))
+				this.$refs.verifyElement.show();
+
 			},
 			async singupSubmit() {
 				if (!this.jiaoyan()) return
-				let captcha1 = new TencentCaptcha('', async (res) => {
+				this.$refs.verifyElement.aaa().then(async (res) => {
 					if (res.ret === 0) {
 						// 1.校验验证码
 						await this.$api.sendEmail({
@@ -179,7 +185,15 @@
 							.then(res => {
 								// 验证是失败时，promise 中断
 								if (res.result.status == 1) {
-									console.log('验证通过 ')
+									uni.removeStorage({
+										key: 'emailId'
+									})
+									uni.showToast({
+										title: '注册成功，即将转跳登录页',
+										icon: 'none'
+									})
+									this.login.email = this.singup.email
+									this.changeTo()
 								} else if (res.result.status == 0) {
 									uni.showToast({
 										title: '验证码错误',
@@ -208,10 +222,8 @@
 								})
 							})
 					}
-				})
-				captcha1.show();
-
-
+				}).catch(err => console.log(err))
+				this.$refs.verifyElement.show();
 			},
 
 			changeTo() {
@@ -223,6 +235,10 @@
 				if (this.time != '') return
 				const email = this.$refs[`singupEmail`].getValue()
 				if (!email) return
+				uni.showToast({
+					title: '',
+					icon: 'loading'
+				})
 				// 监听注册态 email账号 是否被占用
 				await this.$api.hasEmail({
 					email
@@ -274,8 +290,7 @@
 				uni.navigateTo({
 					url: '/pages/forget-password/forget-password'
 				})
-			}
-
+			},
 
 		},
 		onLoad(option) {

@@ -31,14 +31,14 @@
 					<view class="form-field">
 						<text class="form-field__title">验证码</text>
 						<view class="form-field__container">
-							<input-box class="form-field__container__input" ref="code" v-model="code"  type="text" :verification="['isNull','code']" :verificationTip="['验证码不能为空','请输入6位有效验证码']" maTop="15" maBtm="15"></input-box>
+							<input-box class="form-field__container__input" ref="code" v-model="code" type="text" :verification="['isNull','code']" :verificationTip="['验证码不能为空','请输入6位有效验证码']" maTop="15" maBtm="15"></input-box>
 							<view class="form-field__container__get-code" @click="sendEmail">
 								{{time===''? '发送验证码':`${time}s 后获取`}}
 							</view>
 						</view>
 					</view>
 					<view class="form-field btn-control">
-						<button class="submit_btn" hover-class="el-hover" hover-stay-time="100" hover-start-time="0" size='mini' @click="submit">修改密码</button>
+						<button class="submit_btn" hover-class="el-hover" hover-stay-time="100" hover-start-time="0" size='mini' @click="submit">验证</button>
 					</view>
 				</view>
 			</view>
@@ -49,20 +49,23 @@
 						<input-box ref="password" v-model="psw" key="password" type="password" :verification="['isNull','isPassword']" :verificationTip="['密码不能为空','密码由数字、字母和英文标点符号中至少两种组成，且长度在6-16位']" maTop="15" maBtm="15"></input-box>
 					</view>
 					<view class="form-field btn-control">
-						<button class="submit_btn" hover-class="el-hover" hover-stay-time="100" hover-start-time="0" size='mini' @click="resetPassword"></button>
+						<button class="submit_btn" hover-class="el-hover" hover-stay-time="100" hover-start-time="0" size='mini' @click="resetPassword">修改密码</button>
 					</view>
 				</view>
 			</view>
 		</view>
+		<tfgg-verify ref="verifyElement"></tfgg-verify>
 	</view>
 </template>
 
 <script>
 	import inputBox from '@/components/input-box/input-box';
+	import tfggVerify from "@/components/tfgg-verify/tfgg-verify.vue";
 	export default {
 		name: 'forget-password',
 		components: {
-			inputBox
+			inputBox,
+			"tfgg-verify": tfggVerify
 		},
 		computed: {
 			resetEmailId: {
@@ -90,43 +93,45 @@
 			async resetPassword(res) {
 				const password = this.$refs[`password`].getValue()
 				if (!password) return
-				let captcha1 = new TencentCaptcha('', (res) => {
-					if (res.ret === 0) {
-						this.$api.resetPassword({
-							password: this.psw,
-							email: this.email,
-							resetEmailId: this.resetEmailId
-						}).then(res => {
-							if (res.code === 200) {
+				
+				this.$refs.verifyElement.aaa().then((res) => {
+						if (res.ret === 0) {
+							uni.showLoading()
+							this.$api.resetPassword({
+								password: this.psw,
+								email: this.email,
+								resetEmailId: this.resetEmailId
+							}).then(res => {
+								if (res.code === 200) {
+									uni.showToast({
+										title: '密码修改成功，正在转跳登录页',
+										icon: 'none'
+									})
+									uni.removeStorage({
+										key: 'resetEmailId'
+									});
+									setTimeout(() => {
+										uni.redirectTo({
+											url: '/pages/login-page/login-page'
+										})
+									}, 1500)
+								}
+							}).catch(err => {
 								uni.showToast({
-									title: '密码修改成功，正在转跳登录页',
+									title: '验证失败，请重新获取验证码',
 									icon: 'none'
 								})
-								uni.removeStorage({
-								    key: 'resetEmailId'
-								});
 								setTimeout(() => {
 									uni.redirectTo({
-										url: '/pages/login-page/login-page'
+										url: '/pages/forget-password/forget-password'
 									})
-								}, 1500)
-							}
-						}).catch(err => {
+								}, 2000)
 
-							uni.showToast({
-								title: '验证失败，请重新获取验证码',
-								icon: 'none'
 							})
-							setTimeout(() => {
-								uni.redirectTo({
-									url: '/pages/forget-password/forget-password'
-								})
-							}, 2000)
-
-						})
-					}
-				});
-				captcha1.show();
+						}
+					})
+					.catch(err => console.log(err))
+				this.$refs.verifyElement.show();
 			},
 			back() {
 				uni.redirectTo({
@@ -147,6 +152,7 @@
 			},
 			async submit() {
 				if (this.jiaoyan()) {
+					
 					// 1.校验验证码
 					await this.$api.sendEmail({
 							code: this.code,
@@ -182,6 +188,10 @@
 				if (this.time != '') return
 				const email = this.$refs[`email`].getValue()
 				if (!email) return
+				uni.showToast({
+					title:'',
+					icon:'loading'
+				})
 				// 监听注册态 email账号 是否被占用
 				await this.$api.hasEmail({
 					email
