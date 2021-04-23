@@ -3,7 +3,7 @@
 		<view class="comment-wrapper__header">
 
 			<view class="comment-wrapper__header-avatar">
-				<image :src="comment.author.avatar" mode="aspectFill"></image>
+				<image :src="`https://images.weserv.nl/?url=${comment.author.avatar}`" mode="aspectFill" ></image>
 			</view>
 			<view class="comment-wrapper__header-info">
 
@@ -25,7 +25,9 @@
 			</view>
 			<view class="comment-wrapper__reply">
 				<view class="comment-wrapper__reply-list">
-					<news-comment v-if="index < 3 || showAll" v-for="(item,index) in comment.replys" :key="item.comment_id+index.toString()"  :comment="item" reply @reply="commentReply"></news-comment>
+					<news-comment v-if="index < 3 || showAll" v-for="(item,index) in comment.replys" 
+					:key="`${item.comment_id+index.toString()}`"  
+					:comment="item" reply @reply="commentReply"></news-comment>
 				</view>
 				<view class="comment-wrapper__reply__showAll" v-if="comment.replys.length > 3 && !showAll" @click="showRest">
 					共{{ comment.replys.length }}条回复 >

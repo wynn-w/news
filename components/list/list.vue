@@ -66,7 +66,7 @@
 				this.$store.dispatch('asyncArticle', {
 					name: this.tabList[index].name,
 					index,
-					page: this.load[index].page++,
+					page: ++this.load[index].page,
 					pageSize: this.pageSize,
 
 				})
@@ -83,7 +83,7 @@
 				this.$store.dispatch('asyncArticle', {
 					name: this.tabList[index].name,
 					index: index,
-					page: 2,
+					page: this.load[index].page++,
 					pageSize: this.pageSize,
 					isRefresh: true //仅在刷新去情况下传递，默认 false
 				}).then(res => {

@@ -65,6 +65,8 @@ export default new Vuex.Store({
 				Vue.set(state.articleList, index, old)
 				return
 			}
+			old.push(...data)
+			let old = state.articleList[index]
 			Vue.set(state.articleList, index, data)
 		},
 		setIndex(state, value) {
@@ -153,6 +155,7 @@ export default new Vuex.Store({
 					code = res.code
 					// data 无数据说明请求到底，改 loadmore 组件状态 为“无更多数据”
 					if (data.length !== 0) {
+						
 						commit('setArticle', { data, index, isRefresh })
 						return
 					}
@@ -200,8 +203,6 @@ export default new Vuex.Store({
 			let userInfo = {} //临时存储微信返回的用户信息
 			// this 指向 store
 			let wxAuth = async () => {
-
-
 				// 已授权
 				if (auth) {
 					await wxRegister()
@@ -211,7 +212,8 @@ export default new Vuex.Store({
 				await wx.getUserProfile({
 					lang: "zh_CN",
 					desc: "注册"
-				}).then(async res => {
+				})
+				.then(async res => {
 					const { avatarUrl, gender, language, nickName } = res.userInfo
 					userInfo = {
 						avatarUrl,
@@ -320,7 +322,11 @@ export default new Vuex.Store({
 						}, 1000)
 					})
 					.catch(err => {
-						console.log(err);
+						uni.showToast({
+							title: err.msg,
+							icon: 'none'
+						})
+						console.error(err);
 					})
 
 			}
@@ -330,8 +336,8 @@ export default new Vuex.Store({
 					const { data } = res
 					const userId = data.id
 					dispatch('asyncgetUserInfo', { userId })
-					// return uni.navigateBack()
 					console.log('注册成功');
+					return uni.navigateBack()
 				})
 
 			}
