@@ -29,12 +29,12 @@
 				this.emojiDataInited = false
 			},
 			InitEmoji(emoji) {
-				let page = Math.ceil(emoji.length / 42);
+				let page = Math.ceil(emoji.length / 38);
 				for (let i = 0; i < page; i++) {
 					this.emojiData[i] = [];
-					for (let k = 0; k < 42; k++) {
-						emoji[i * 42 + k] ? this.emojiData[i].push(
-							emoji[i * 42 + k]
+					for (let k = 0; k < 38; k++) {
+						emoji[i * 38 + k] ? this.emojiData[i].push(
+							emoji[i * 38 + k]
 						) : ''
 					}
 				}

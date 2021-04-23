@@ -32,7 +32,7 @@
 			<!-- 文章评论 -->
 			<view class="detail-comment">
 				<view class="comment-title">最新评论</view>
-				<view class="comment-content" v-for="(item,index) in commentList" :key="item.comment_id+index.toString()">
+				<view class="comment-content" v-for="(item,index) in commentList" :key="`${item.comment_id+index.toString()}`" >
 					<news-comment :comment="item" @reply="reply"></news-comment>
 				</view>
 				<uni-load-more v-if=" commentList.length > commentsPageSize || commentList.length === 0 " iconType="snow" :status="loading" :contentText="contentText"></uni-load-more>
@@ -89,6 +89,7 @@
 
 <script>
 	import uParse from "@/components/gaoyia-parse/parse.vue"
+	// import uParse from '@/components/u-parse/u-parse.vue'
 	import { mapGetters } from "vuex"
 	export default {
 		name:"news-detail",
@@ -112,8 +113,6 @@
 					height: 500
 				},
 				isPass : false, //敏感词检测
-				// emojiData:[], //表情包数组
-				// emojiDataInited :false,
 				commentsPage: 1,
 				commentsPageSize:5,
 				isBottom: false, //下拉加载触发两次解决
@@ -264,7 +263,6 @@
 			},
 			// 获取评论
 			async getArticleComments(value){
-				console.log(this.commentsPage);
 				const isUpdate = value  || false
 				await this.$api.getComments({
 					articleId: this.article._id,
@@ -383,7 +381,6 @@
 		},
 		onReachBottom(){
 			if(this.isBottom)return
-			console.log(2);
 			const old  = this.commentsPage
 			this.isBottom = true
 			this.commentsPage++
@@ -556,10 +553,14 @@
 					}
 				}
 			}
-			.popup-textarea{
-				width: 100%;
-				height: 500rpx;
+			>.popup-content{
+				
+				.popup-textarea{
+					width: 100%;
+					height: 500rpx;
+				}
 			}
+			
 			>.popup-content_other{
 					display: flex;
 					flex-direction: row;
@@ -585,15 +586,17 @@
 				color: #999999;
 			
 			}
+			.teartextEmoji{
+				position: absolute;
+				padding: 0 30rpx;
+				bottom: 40rpx;
+				left: 0;
+			}
 			
 		}
 	
 	}
-.teartextEmoji{
-	position: absolute;
-	bottom: 40rpx;
-	left: 0;
-}
+
 .lastbox{
     justify-content: flex-start;
 }
