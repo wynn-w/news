@@ -21,6 +21,7 @@
 		watch: {
 			tabIndex(newValue) {
 				this.activeIndex = newValue
+				this.scroll(this.activeIndex)
 			}
 		},
 		data() {
@@ -34,20 +35,25 @@
 		},
 		methods: {
 			clickItem(item, index) {
-
+				
 				this.activeIndex = index
 				this.$emit("update:selected", { data: item, index })
+				
+
+			},
+			scroll(index){
+				if (this.widthList.length === 0) {
+					this.calculateItemWidth()
+				}
 				let widthCopy = this.widthList;
 				let scrollWidth = this.scrollList[index]; //距离文档左部的距离
 				const currentWidth = widthCopy[index];
 				// scrollView 居中算法
 				// 减去固定宽度位移
 				// 减去选中的bar的宽度的一半
-				// console.log(scrollWidth,currentWidth);
 				scrollWidth -= this.screenWidth;
 				scrollWidth -= currentWidth / 2;
 				this.scrollLeft = scrollWidth;
-
 			},
 			calculateWindowWidth() {
 				let info = uni.getSystemInfoSync();
@@ -71,28 +77,24 @@
 						} else {
 							arr1.push(lastWidth);
 						}
+
 						arr2.push(data.width)
+
 					}).exec()
-					this.widthList = Object.assign([], this.widthList, arr2)
-					this.scrollList = Object.assign([], this.scrollList, arr1)
 				}
+				this.widthList = Object.assign([], this.widthList, arr2)
+				this.scrollList = Object.assign([], this.scrollList, arr1)
+
 			},
 		},
 		mounted() {
+			this.activeIndex = this.tabIndex
 			this.calculateWindowWidth()
-			setTimeout(() => {
-				this.calculateItemWidth() //真就mounted也取不到
-			}, 1000)
 		}
 	}
 </script>
 
 <style lang="scss">
-	page {
-		// overflow: -moz-hidden-unscrollable;
-
-	}
-
 	.news-tab {
 		display: flex;
 		flex-direction: row;
@@ -109,6 +111,7 @@
 			// scrollbar-width: none;
 			// height: calc(100% + 36rpx);
 			width: 100%;
+
 			overflow: auto;
 
 			.news-tab__srcoll-box {
@@ -119,7 +122,7 @@
 				align-items: center;
 				box-sizing: border-box;
 				height: 90rpx;
-				
+
 
 
 				.news-tab__srcoll__item {
@@ -170,14 +173,21 @@
 		.news-tab__srcoll {
 			-ms-overflow-style: none;
 		}
-		// firefox ==> 无法跳动
-		.news-tab__srcoll{
-			overflow: hidden;
-			.news-tab__srcoll-box{
-				margin-bottom: -16px;
-				 overflow-x: scroll;
-				 overflow-y: hidden;
-			}
-		}
+
+		// firefox ==> 无法跳动 ==>放弃了
+		// .news-tab__srcoll {
+		// 	// scrollbar-width: none;
+		// 	// padding: 0 0 32rpx 0;
+		// 	overflow: hidden;
+
+		// 	.news-tab__srcoll-box {
+		// 		// /overflow:-moz-scrollbars-none;
+
+		// 		margin-bottom: -16px;
+		// 		overflow-x: scroll;
+		// 		overflow-y: hidden;
+
+		// 	}
+		// }
 	}
 </style>
