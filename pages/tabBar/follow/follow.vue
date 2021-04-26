@@ -10,12 +10,12 @@
 			</view>
 		</view>
 		<!-- 主体 -->
-		<view class="follow__content">
-			<view class="follow__content__article" :style="{height:height}" v-if="choose === 0">
-				<uni-load-more v-if="acticleLiks.length === 0 " iconType="snow" :status="load[choose].loading"></uni-load-more>
+		<view class="follow__content" >
+			<view class="follow__content__article" :style="{height:height}" v-show="choose === 0">
+				<uni-load-more v-cloak v-if="acticleLiks.length === 0 " iconType="snow" :status="load[choose].loading"></uni-load-more>
 				<list-scroll :list="acticleLiks" @loadMore="loadMore" :topLoadMore="false" :load="load" isSelf :pageSize="load[choose].pageSize" :current="choose"></list-scroll>
 			</view>
-			<view class="follow__content__author" v-else :style="{height:height}">
+			<view class="follow__content__author" v-cloak  v-show="choose === 1" :style="{height:height}">
 				<uni-load-more v-if="authorLiks.length === 0 " iconType="snow" :status="load[choose].loading"></uni-load-more>
 				<list-scroll-slot :load="load" :pageSize="load[choose].pageSize" :current="choose">
 					<uni-swipe-action threshold=60>
@@ -74,7 +74,7 @@
 				}).then(res => {
 					if (res.code === 200) {
 						this.loadInit()
-						this.updataAuthor({delete:true})
+						this.updataAuthor({ delete: true })
 						uni.showToast({
 							title: '取消关注成功',
 							icon: 'none'
@@ -96,7 +96,7 @@
 							}).then(res => {
 								if (res.code === 200) {
 									this.loadInit()
-									this.updateActicle({delete:true})
+									this.updateActicle({ delete: true })
 									uni.showToast({
 										title: '取消收藏成功',
 										icon: 'none'
@@ -122,8 +122,8 @@
 					if (data.length === 0) {
 						let old = this.load[this.choose]
 						old.loading = "noMore"
-						if(arg && arg.delete){
-							this.authorLiks=[]
+						if (arg && arg.delete) {
+							this.authorLiks = []
 						}
 						this.load = Object.assign({}, this.load, old)
 						return
@@ -153,8 +153,8 @@
 					if (data.length === 0) {
 						let old = this.load[this.choose]
 						old.loading = "noMore"
-						if(arg && arg.delete){
-							this.acticleLiks=[]
+						if (arg && arg.delete) {
+							this.acticleLiks = []
 						}
 						this.load = Object.assign({}, this.load, old)
 						this.$forceUpdate()
@@ -249,6 +249,7 @@
 					success: async (res) => {
 						if (res.confirm) {
 							await this.isULogin()
+							
 						} else if (res.cancel) {
 							console.log('取消')
 						}
@@ -261,6 +262,13 @@
 				await this.isULogin()
 				// #endif
 
+			}else{
+				if(this.choose ===1 && this.authorLiks.length===0){
+					this.updataAuthor()
+				}	
+				if(this.choose ===0 && this.authorLiks.length===0){
+					this.updateActicle()
+				}
 			}
 		}
 	}
@@ -271,6 +279,10 @@
 		height: 100%;
 		display: flex;
 		background-color: #efeeee;
+
+		[v-cloak] {
+			display: none;
+		}
 	}
 
 	.news-follow {
