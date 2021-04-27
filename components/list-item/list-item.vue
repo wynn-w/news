@@ -101,7 +101,7 @@
 				})
 			},
 			emitLongpress() {
-				if (!this.isSelf) {
+				if (this.isSelf) {
 					uni.$emit('deleteActicleLike', this.item._id)
 				}
 			}
